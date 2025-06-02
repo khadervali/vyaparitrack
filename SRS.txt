@@ -1,0 +1,296 @@
+Detailed Software Requirement Specifications (SRS) 
+
+Software Requirements Specification (SRS)
+Project Title: Multi-Vendor SaaS Inventory Management System (IMS)
+Prepared For: Development Team / Khader Vali
+Prepared By: Product Owner
+Document Version: 1.0
+Date: 2025-05-23
+
+1. System Overview
+This is a cloud-based SaaS (Software as a Service) multi-vendor Inventory Management System (IMS) designed for small to large-scale vendors across all industries. The system will offer modular features such as inventory tracking, sales and purchase management, Indian GST-compliant billing, and full white-labeling capabilities. It supports a multi-login structure with customizable access control and is accessible via web and mobile interfaces.
+
+2. User Roles and Access Control
+2.1 User Roles:
+Super Admin: Full control over the entire platform.
+
+
+Vendor Admin: Manages the vendor's account, settings, staff, and branches.
+
+
+Vendor Staff: Limited operational access based on assigned permissions.
+
+
+Inventory Manager: Handles inventory-specific tasks like stock updates, transfers, and alerts.
+
+
+2.2 Role-Based Access Control (RBAC):
+Each vendor can define role permissions for their staff.
+
+
+Access can be granted or restricted for each module (e.g., Purchase, Sales, Inventory, Reports).
+
+
+2.3 Multi-Account Access:
+A single user can manage multiple vendor accounts via a unified login.
+
+
+
+3. Multi-Vendor & Subdomain Structure
+Each vendor will operate in an isolated environment (data siloed per vendor).
+
+
+Vendors will be assigned a unique subdomain (e.g., vendorname.imsapp.com).
+
+
+Support for managing multiple branches/outlets per vendor.
+
+
+
+4. Inventory Management
+4.1 Core Features:
+Add/Edit/Delete Products & Services
+
+
+Manage Stock In/Out
+
+
+Internal Stock Transfer Between Branches
+
+
+Low Stock Alerts
+
+
+4.2 Advanced Features:
+Barcode & QR Code Scanning
+
+
+Lot & Batch Tracking
+
+
+Expiry Date Tracking
+
+
+Serial Number Tracking
+
+
+FIFO/LIFO Stock Valuation
+
+
+Composite Items (Bundled Products)
+
+
+Unit Conversion (e.g., kg to g, L to mL)
+
+
+
+5. Sales & Purchase
+Purchase Orders (PO)
+
+
+Sales Orders (SO)
+
+
+Invoice Generation
+
+
+Automatic GST Calculation (CGST, SGST, IGST)
+
+
+Return & Refund Handling
+
+
+Auto Inventory Update on Purchase/Sale
+
+
+
+6. GST Billing & Accounting
+HSN/SAC code support
+
+
+Configurable default GST percentages
+
+
+GST invoice generation
+
+
+GSTR-compliant reports (Excel/CSV export)
+
+
+Basic accounting features:
+
+
+Ledger
+
+
+Balance Sheet
+
+
+Profit & Loss
+
+
+Tax Summary
+
+
+
+7. UI/UX & Customization
+Responsive, mobile-first design
+
+
+Dark/Light theme toggle
+
+
+Per-vendor customization:
+
+
+Logo
+
+
+Brand Colors (especially CTAs)
+
+
+Invoice Templates
+
+
+Email Templates
+
+
+WhatsApp Bulk Messages
+
+
+Local multilingual UI (no RTL support needed)
+
+
+
+8. White Labeling
+Custom domain mapping (e.g., billing.shopname.com)
+
+
+Branded email alerts and UI
+
+
+Vendor-specific branding via admin panel
+
+
+
+9. Reporting & Analytics
+Dashboard with KPIs for each role
+
+
+Reports:
+
+
+Stock Summary
+
+
+Sales Summary
+
+
+Purchase Summary
+
+
+Low Stock Items
+
+
+Tax Reports
+
+
+Profit & Loss
+
+
+Export options: Excel, CSV, PDF
+
+
+
+10. Notifications & Alerts
+Channels:
+
+
+Email
+
+
+In-app
+
+
+WhatsApp (preferred over SMS)
+
+
+Alert types:
+
+
+Stock Alerts
+
+
+PO/SO Confirmations
+
+
+Invoice Reminders
+
+
+Subscription Reminders
+
+
+Vendor-configurable notification settings
+
+
+
+11. Subscription & Billing
+Pricing models:
+
+
+Yearly / Half-Yearly
+
+
+Freemium Trial (duration set by Super Admin)
+
+
+Manual renewal (no auto-renewal)
+
+
+Lockout after expiry with renewal alerts
+
+
+Super Admin manages plans and subscriptions
+
+
+
+12. Security & Compliance
+Two-Factor Authentication (2FA)
+
+
+Audit Logs for all user actions
+
+
+Data privacy compliance (Indian DPDPA)
+
+
+Encrypted data storage and secure session handling
+
+
+
+13. Hosting & Deployment
+Hosting: Shared hosting (initial phase, Hostinger preferred)
+
+
+Deployment: Cloud-based + Offline/Desktop Support
+
+
+Auto-scaling support planned for future phase
+
+
+
+14. Future Enhancements (Not in v1.0)
+API Access for vendor integration
+
+
+Third-party integrations (Tally, Shopify, Amazon, etc.)
+
+
+Auto-scaling infrastructure
+
+
+AI-based inventory forecasting
+
+
+
+End of Document

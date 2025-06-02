@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* White */
+    --foreground: 240 10% 3.9%; /* Dark Blue-Gray */
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 217 91% 60%; /* Professional Blue */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+    --secondary: 210 40% 96.1%; /* Light Grayish Blue */
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 210 40% 98%; /* Very Light Grayish Blue */
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%; /* Red */
+    --destructive-foreground: 0 0% 100%;
+    --border: 214.3 31.8% 91.4%; /* Light Gray Border */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%; /* Professional Blue for focus rings */
+    --radius: 0.5rem; /* Slightly softer radius */
+  }
+
+  .dark {
+    --background: 240 10% 3.9%; /* Very Dark Blue-Gray */
+    --foreground: 0 0% 98%; /* Almost White */
+    --card: 240 4.8% 12%; /* Darker Card Background */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 217 91% 65%; /* Slightly Brighter Blue for Dark Mode */
+    --primary-foreground: 240 5.9% 10%; /* Dark text on primary for contrast */
+    --secondary: 240 3.7% 15.9%; /* Dark Grayish Blue */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 50.6%; /* Darker Red */
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%; /* Dark Border */
+    --input: 240 3.7% 15.9%;
+    --ring: 217 91% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--secondary) / 0.8);
+  border-radius: 10px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: hsl(var(--secondary) / 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.7);
+  border-radius: 10px;
+  border: 2px solid hsl(var(--secondary)/0.8);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.6);
+  border: 2px solid hsl(var(--secondary)/0.5);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.65); 
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dark .glassmorphism {
+  background: rgba(25, 35, 50, 0.6); /* Darker, more professional glass */
+  backdrop-filter: blur(12px); /* Slightly more blur for depth */
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25); /* Softer, diffused shadow */
+}
+
+.pattern-dots {
+  background-image: radial-gradient(hsl(var(--foreground)/0.05) 1px, transparent 1px);
+  background-size: 10px 10px;
+}
+
+.dark .pattern-dots {
+  background-image: radial-gradient(hsl(var(--foreground)/0.1) 1px, transparent 1px);
+}
