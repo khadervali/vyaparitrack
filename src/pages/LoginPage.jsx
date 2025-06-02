@@ -15,7 +15,7 @@ const LoginPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -29,42 +29,51 @@ const LoginPage = () => {
       return;
     }
 
-    fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    })
-    .then(async (response) => {
-      setIsLoading(false);
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        toast({
-          title: "Login Failed",
-          description: error.message || "Invalid email or password.",
-          variant: "destructive",
-        });
-      } else {
-        const data = await response.json();
-        // Assuming the backend sends a JWT in a field like 'token'
-        localStorage.setItem('token', data.token); // Store JWT
-        toast({
-          title: "Login Successful",
-          description: `Welcome back!`, // You might get user info from token or another endpoint
-        });
-        navigate('/dashboard'); 
+        throw new Error(data.message || "Invalid credentials");
       }
-    })
-    .catch((error) => {
-      setIsLoading(false);
+
+      // Store JWT token and user info
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('isAuthenticated', 'true');
+      
+      // Parse the JWT token to get user info
+      const tokenPayload = JSON.parse(atob(data.token.split('.')[1]));
+      localStorage.setItem('userRole', tokenPayload.user.role);
+      
+      // Show success toast and then navigate
       toast({
-        title: "Error",
-        description: "An error occurred during login.",
+        title: "Login Successful",
+        description: "Welcome back to VyapariTrack!",
+        duration: 2000, // Show for 2 seconds
+      });
+      
+      // Add a small delay before navigation to ensure toast is visible
+      setTimeout(() => {
+        navigate('/app/dashboard', { replace: true });
+      }, 500);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login Failed",
+        description: error.message || "An error occurred during login. Please try again.",
         variant: "destructive",
       });
-      console.error('Login error:', error);
-    });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

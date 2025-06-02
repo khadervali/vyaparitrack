@@ -40,8 +40,10 @@ function ScrollToTop() {
 }
 
 function ProtectedRoute({ children }) {
-  const currentUser = JSON.parse(localStorage.getItem('vyaparitrack_currentUser'));
-  if (!currentUser) {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const token = localStorage.getItem('token');
+
+  if (!isAuthenticated || !token) {
     return <Navigate to="/login" replace />;
   }
   return children;
@@ -72,7 +74,7 @@ function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    setIsAuthResolved(true); 
+    setIsAuthResolved(true);
   }, []);
 
   if (!isAuthResolved) {
@@ -84,6 +86,7 @@ function App() {
       <ScrollToTop />
       <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background dark:from-background dark:via-primary/5 dark:to-background">
         <Routes>
+          {/* Public Routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -101,8 +104,9 @@ function App() {
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/help" element={<HelpPage />} />
           </Route>
-          
-          <Route 
+
+          {/* Protected App Routes */}
+          <Route
             path="/app"
             element={
               <ProtectedRoute>
@@ -110,22 +114,22 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="sales" element={<SalesPage />} />
             <Route path="purchases" element={<PurchasesPage />} />
             <Route path="reports" element={<ReportsPage />} />
-            <Route path="gst-tools" element={<GstToolsPage />} />
+            <Route path="gst" element={<GstToolsPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<UserProfilePage />} />
           </Route>
-          
-          {/* Redirect /dashboard to /app/dashboard for legacy compatibility if needed */}
-          <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
 
+          {/* Catch-all route - Redirect to landing page */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        <Toaster />
       </div>
+      <Toaster />
     </Router>
   );
 }

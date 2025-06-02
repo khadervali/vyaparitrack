@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select } from "@/components/ui/select";
 
 const SignupPage = () => {
   const [fullName, setFullName] = useState('');
@@ -17,25 +18,26 @@ const SignupPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState('Vendor Admin');
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => { // Add async keyword here
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     if (!fullName || !email || !password || !confirmPassword) {
       toast({ title: "Error", description: "Please fill in all fields.", variant: "destructive" });
       setIsLoading(false);
-      return false; // Prevent form submission
+      return false;
     } else if (password !== confirmPassword) {
       toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
       setIsLoading(false);
-      return false; // Prevent form submission
+      return false;
     } else if (password.length < 6) {
       toast({ title: "Error", description: "Password must be at least 6 characters long.", variant: "destructive" });
       setIsLoading(false);
-      return false; // Prevent form submission
+      return false;
     } else if (!agreedToTerms) {
       toast({ title: "Error", description: "You must agree to the terms and conditions.", variant: "destructive" });
       setIsLoading(false);
@@ -43,16 +45,24 @@ const SignupPage = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/signup', {
+      console.log('Sending signup request with data:', {
+        username: fullName,
+        email,
+        password: '***hidden***',
+        role
+      });
+      
+      const response = await fetch('http://localhost:3000/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
-          username: fullName, // Assuming username is fullName for now, adjust if needed
+          username: fullName,
           email: email,
           password: password,
-          role: 'Vendor Admin', // Hardcoded default role
+          role: role,
         }),
       });
 
@@ -93,6 +103,19 @@ const SignupPage = () => {
           <div>
             <Label htmlFor="email">Email Address</Label>
             <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-background/70 dark:bg-input mt-1" />
+          </div>
+          <div>
+            <Label htmlFor="role">Role</Label>
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full mt-1 px-3 py-2 bg-background/70 dark:bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="Vendor Admin">Vendor Admin</option>
+              <option value="Vendor Staff">Vendor Staff</option>
+              <option value="Inventory Manager">Inventory Manager</option>
+            </select>
           </div>
           <div>
             <Label htmlFor="password">Password</Label>

@@ -5,10 +5,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 const dbConfig = {
   dialect: 'mysql', // Manually set
-  host: '127.0.0.1', // Manually set (or your actual host)
-  port: 3306, // <-- Manually set the correct port here
+  host: 'localhost', // Manually set (or your actual host)
+  port: 8889, // <-- Manually set the correct port here
   database: 'vyaparitrack', // Manually set
-  username: 'vyapari_user', // Manually set (or your actual user)
+  username: 'root', // Manually set (or your actual user)
   password: 'Admin@123', // <-- Manually set your password here
 };
 

@@ -39,13 +39,31 @@ const AppLayout = () => {
   });
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('vyaparitrack_currentUser'));
-    if (user) {
-      setCurrentUser(user);
-    } else {
-      navigate('/login');
-    }
-  }, [navigate, location.pathname]);
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+      const userRole = localStorage.getItem('userRole');
+      
+      if (!token || !isAuthenticated) {
+        navigate('/login');
+        return;
+      }
+
+      // Set current user from token
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        setCurrentUser({
+          role: userRole,
+          ...tokenPayload.user
+        });
+      } catch (error) {
+        console.error('Error parsing token:', error);
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
+  }, [navigate, location.pathname]); // Re-check auth on route change
 
   useEffect(() => {
     if (darkMode) {
@@ -60,9 +78,11 @@ const AppLayout = () => {
   const toggleTheme = () => setDarkMode(!darkMode);
 
   const handleLogout = () => {
-    localStorage.removeItem('vyaparitrack_currentUser');
+    localStorage.removeItem('token');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userRole');
     toast({ title: "Logged Out", description: "You have been successfully logged out." });
-    navigate('/');
+    navigate('/login');
   };
 
   const navLinks = [
@@ -75,117 +95,109 @@ const AppLayout = () => {
     { to: '/app/settings', icon: <Settings />, text: 'Settings' },
   ];
 
-  if (!currentUser) return <div className="flex items-center justify-center min-h-screen bg-background text-foreground">Authenticating...</div>;
-
-  const sidebarVariants = {
-    open: { x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
-    closed: { x: "-100%", transition: { type: "spring", stiffness: 300, damping: 30 } },
-  };
-  
-  const topbarHeightClass = "h-16"; // Tailwind class for height
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <p className="text-lg text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen bg-secondary/30 dark:bg-background overflow-hidden">
-      {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex flex-col w-64 bg-card dark:bg-card/80 border-r border-border/70 fixed top-0 left-0 bottom-0 z-30 ${topbarHeightClass} pt-16`}>
-        <div className="flex-grow p-4 space-y-2">
-          {navLinks.map(link => (
-            <SidebarLink key={link.to} {...link} currentPath={location.pathname} />
-          ))}
-        </div>
-      </aside>
-
-      {/* Mobile Sidebar */}
-      <AnimatePresence>
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background dark:from-background dark:via-primary/5 dark:to-background">
+      <div className="flex h-full">
+        {/* Mobile sidebar overlay */}
         {isMobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/50 z-30 md:hidden" 
-            />
-            <motion.aside
-              variants={sidebarVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              className={`md:hidden fixed top-0 left-0 bottom-0 w-64 bg-card dark:bg-card/95 z-40 flex flex-col ${topbarHeightClass} pt-16`}
-            >
-              <div className="flex-grow p-4 space-y-2 overflow-y-auto">
-                {navLinks.map(link => (
-                  <SidebarLink key={link.to} {...link} currentPath={location.pathname} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                ))}
-              </div>
-            </motion.aside>
-          </>
+          <div
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
         )}
-      </AnimatePresence>
 
-      {/* Main Content Area */}
-      <div className={`flex-1 flex flex-col md:ml-64`}>
-        {/* Topbar */}
-        <header className={`${topbarHeightClass} bg-card dark:bg-card/80 border-b border-border/70 flex items-center justify-between px-4 sm:px-6 z-20 sticky top-0`}>
-          <div className="flex items-center">
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden mr-3 p-2 text-foreground/80 hover:text-primary">
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-             <Link to="/app/dashboard" className="flex items-center space-x-2 md:hidden">
-                <ShoppingBag className="h-7 w-7 text-primary" />
-                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400 dark:to-blue-300">
-                    VyapariTrack
-                </span>
+        {/* Sidebar */}
+        <aside
+          className={`fixed lg:static top-0 left-0 z-50 h-full w-64 bg-card/80 dark:bg-card/40 border-r backdrop-blur-md transform transition-transform duration-200 ease-in-out lg:translate-x-0 flex-shrink-0 ${
+            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="sticky top-0 h-16 flex items-center px-4 border-b bg-card/60 dark:bg-card/40 backdrop-blur-md z-20">
+            <Link to="/app/dashboard" className="flex items-center space-x-2">
+              <ShoppingBag className="h-6 w-6 text-primary" />
+              <span className="font-bold text-lg">VyapariTrack</span>
             </Link>
           </div>
+          <nav className="p-4 space-y-1 h-[calc(100vh-4rem)] overflow-y-auto">
+            {navLinks.map((link) => (
+              <SidebarLink
+                key={link.to}
+                {...link}
+                currentPath={location.pathname}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+              />
+            ))}
+          </nav>
+        </aside>
 
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <motion.button
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-accent transition-colors"
-              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-              aria-label={darkMode ? "Switch to light theme" : "Switch to dark theme"}
+        {/* Main content area */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* Top navigation bar */}
+          <header className="sticky top-0 h-16 flex items-center justify-between px-4 border-b bg-card/60 dark:bg-card/40 backdrop-blur-md z-20">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-md lg:hidden hover:bg-accent"
             >
-              {darkMode ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-foreground/70" />}
-            </motion.button>
-
-            <button className="p-2 rounded-full hover:bg-accent relative">
-              <Bell size={20} className="text-foreground/70" />
-              <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-card" />
+              <Menu className="h-5 w-5" />
             </button>
 
-            <div className="relative">
-              <button 
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="flex items-center space-x-2 p-1 rounded-full hover:bg-accent"
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full hover:bg-accent"
+                aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
               >
-                <UserCircle size={28} className="text-foreground/70" />
-                <span className="hidden sm:inline text-sm font-medium text-foreground/80">{currentUser.fullName.split(' ')[0]}</span>
-                <ChevronDown size={16} className="text-foreground/60" />
+                {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </button>
-              <AnimatePresence>
-              {isProfileDropdownOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 bg-popover border rounded-md shadow-lg py-1 z-50"
+              
+              <div className="relative">
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center space-x-2 p-2 rounded-full hover:bg-accent"
                 >
-                  <Link to="/app/profile" onClick={() => setIsProfileDropdownOpen(false)} className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent">My Profile</Link>
-                  <button onClick={handleLogout} className="w-full text-left block px-4 py-2 text-sm text-popover-foreground hover:bg-accent">
-                    <LogOut className="inline w-4 h-4 mr-2" />Logout
-                  </button>
-                </motion.div>
-              )}
-              </AnimatePresence>
+                  <UserCircle className="h-5 w-5" />
+                  <span className="text-sm font-medium">{currentUser?.username}</span>
+                </button>
+
+                {isProfileDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 py-1 bg-card border rounded-md shadow-lg">
+                    <Link
+                      to="/app/profile"
+                      className="block px-4 py-2 text-sm hover:bg-accent"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-accent"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </header>
-        
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-secondary/30 dark:bg-background">
-          <Outlet />
-        </main>
+          </header>
+
+          {/* Main content */}
+          <main className="flex-1 overflow-auto p-6 bg-background/50 dark:bg-background/40">
+            <div className="container mx-auto max-w-7xl">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );

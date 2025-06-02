@@ -7,10 +7,13 @@ import { useNavigate, Link } from 'react-router-dom';
 
 
 const StatCard = ({ title, value, icon, description, color }) => (
-  <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 ${color} dark:bg-opacity-20 glassmorphism`}>
+  <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 ${color} hover:scale-[1.02] glassmorphism`}>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium text-foreground/90">{title}</CardTitle>
-      {React.cloneElement(icon, { className: "h-5 w-5 text-muted-foreground" })}
+      {React.cloneElement(icon, { className: `h-5 w-5 ${color.includes('green') ? 'text-green-500' : 
+        color.includes('blue') ? 'text-blue-500' : 
+        color.includes('purple') ? 'text-purple-500' : 
+        'text-yellow-500'} dark:opacity-90` })}
     </CardHeader>
     <CardContent>
       <div className="text-3xl font-bold text-foreground">{value}</div>
@@ -24,23 +27,37 @@ const DashboardPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('vyaparitrack_currentUser'));
-    if (user) {
-      setCurrentUser(user);
-    } else {
-      navigate('/login'); 
+    const token = localStorage.getItem('token');
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    
+    if (!token || !isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      setCurrentUser({
+        ...tokenPayload.user,
+        role: localStorage.getItem('userRole')
+      });
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      navigate('/login');
     }
   }, [navigate]);
 
-
   if (!currentUser) {
     return (
-      <div className="flex items-center justify-center min-h-full">
-        <p className="text-lg text-muted-foreground">Loading user data...</p>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+          <p className="text-lg text-muted-foreground">Loading dashboard data...</p>
+        </div>
       </div>
     );
   }
-  
+
   const stats = [
     { title: "Total Sales", value: "₹1,25,430", icon: <IndianRupee />, description: "+20.1% from last month", color: "bg-green-500/10 dark:bg-green-500/20" },
     { title: "Active Products", value: "235", icon: <Package />, description: "+10 since last week", color: "bg-blue-500/10 dark:bg-blue-500/20" },
@@ -63,119 +80,61 @@ const DashboardPage = () => {
 
 
   return (
-    <div className="min-h-full">
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
-      >
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-          Welcome back, <span className="text-primary">{currentUser.fullName}!</span>
-        </h1>
-        <p className="text-muted-foreground mt-1">Here's what's happening with your business today.</p>
-      </motion.header>
-
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.title}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
-            >
-              <StatCard {...stat} />
-            </motion.div>
-          ))}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" size="sm">
+            <Bell className="h-4 w-4 mr-2" />
+            Notifications
+          </Button>
+          <Button size="sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
         </div>
-      </motion.section>
-
-      <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-2"
-        >
-          <Card className="shadow-lg glassmorphism h-full">
-            <CardHeader>
-              <CardTitle className="text-xl text-foreground">Quick Actions</CardTitle>
-              <CardDescription className="text-muted-foreground">Get started with common tasks.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {quickActions.map((action) => (
-                <Button 
-                  key={action.label} 
-                  variant="outline" 
-                  className="justify-start text-left h-auto py-3 hover:bg-accent dark:hover:bg-accent/50"
-                  asChild
-                >
-                  <Link to={action.path}>
-                    {action.icon}
-                    {action.label}
-                  </Link>
-                </Button>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.section>
-        
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="lg:col-span-1"
-        >
-          <Card className="shadow-lg glassmorphism h-full">
-            <CardHeader>
-              <CardTitle className="text-xl text-foreground">Alerts & Notifications</CardTitle>
-              <CardDescription className="text-muted-foreground">Important updates and reminders.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {alerts.length > 0 ? (
-                <ul className="space-y-3 max-h-60 overflow-y-auto">
-                  {alerts.map((alert) => (
-                    <li key={alert.id} className={`flex items-start p-3 rounded-md text-sm ${
-                      alert.severity === 'warning' ? 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400' :
-                      alert.severity === 'info' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400' :
-                      'bg-red-500/10 text-red-700 dark:text-red-400'
-                    }`}>
-                      <span className="mr-2 mt-0.5">{alert.icon}</span>
-                      <span>{alert.message}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground text-sm">No new alerts.</p>
-              )}
-            </CardContent>
-          </Card>
-        </motion.section>
       </div>
-      
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.7 }}
-      >
-        <Card className="shadow-lg glassmorphism">
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat, index) => (
+          <StatCard key={index} {...stat} />
+        ))}
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-xl text-foreground">Recent Activity (Placeholder)</CardTitle>
-             <CardDescription className="text-muted-foreground">This section will show recent sales, stock updates, etc.</CardDescription>
+            <CardTitle>Recent Orders</CardTitle>
+            <CardDescription>Latest order activity</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3">
-              <li className="text-sm text-foreground/80 p-3 bg-secondary/30 dark:bg-secondary/20 rounded-md">New sale: Order #INV00123 - ₹2,500</li>
-              <li className="text-sm text-foreground/80 p-3 bg-secondary/30 dark:bg-secondary/20 rounded-md">Stock updated: Product 'XYZ' - 10 units added</li>
-            </ul>
+            {/* Order content will go here */}
+            <p className="text-sm text-muted-foreground">No recent orders</p>
           </CardContent>
         </Card>
-      </motion.section>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Low Stock Items</CardTitle>
+            <CardDescription>Items that need restocking</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Low stock items will go here */}
+            <p className="text-sm text-muted-foreground">No items below threshold</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Sales Overview</CardTitle>
+            <CardDescription>Monthly sales performance</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Sales chart will go here */}
+            <p className="text-sm text-muted-foreground">No sales data available</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

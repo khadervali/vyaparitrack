@@ -1,55 +1,74 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import sequelize from './config/database'; // Import Sequelize instance
+import cors from 'cors';
+import sequelize from './config/database';
 import authRoutes from './routes/authRoutes';
 import inventoryRoutes from './routes/inventoryRoutes';
 import productRoutes from './routes/productRoutes';
 import branchRoutes from './routes/branchRoutes';
+
 const app = express();
-const port = process.env.PORT || 5000;
-const connection = process.env.MONGO_URI || 'mongodb://localhost:27017/vyaparitrack';
+const port = process.env.PORT || 3000;
 
 // Check for required environment variables
 if (!process.env.JWT_SECRET) {
   console.error('FATAL ERROR: JWT_SECRET is not defined.');
-  process.exit(1); // Exit the process with an error code
+  process.exit(1);
 }
 
-// You might also want to check for MONGO_URI or other critical variables
-// if (!process.env.MONGO_URI && process.env.DB_DIALECT !== 'mysql') {
-//   console.error('FATAL ERROR: MONGO_URI is not defined.');
-//   process.exit(1);
-// }
-// if (process.env.DB_DIALECT === 'mysql' && (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME)) {
-//    console.error('FATAL ERROR: MySQL database credentials are not fully defined.');
-//    process.exit(1);
-// }
-
-// Middleware to parse JSON bodies
+// Middleware
 app.use(express.json());
 
-// Connect to MongoDB
+// CORS middleware configuration
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 // Basic route
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
 // Mount the routers
-app.use('/api/auth', authRoutes);
+console.log('Mounting routes...');
+app.use('/api/auth', (req, res, next) => {
+  console.log('Auth route accessed:', req.method, req.path, req.headers);
+  next();
+}, authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/branches', branchRoutes);
 
+// Start server and initialize database
+const startServer = async () => {
+  try {
+    // Test database connection
+    await sequelize.authenticate();
+    console.log('Database connection established successfully.');
 
-// Start the server
-app.listen(port, () => {
-  sequelize.sync({ force: false }) // Set force to true to drop and re-create tables (use with caution!)
-    .then(() => {
-      console.log('Database synchronized successfully.');
+    // Sync database models
+    await sequelize.sync({ force: true }); // This will create the tables. Set back to false after first run
+    console.log('Database tables created successfully.');
+
+    // Start server
+    app.listen(port, () => {
       console.log(`Server running on port ${port}`);
-    })
-    .catch((err) => {
-      console.error('Error synchronizing database:', err);
     });
-});
+  } catch (err) {
+    console.error('Error starting server:', err);
+    process.exit(1);
+  }
+};
+
+startServer();
