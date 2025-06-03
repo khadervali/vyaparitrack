@@ -68,14 +68,26 @@ const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
 
+// Add DialogFooter component
+const DialogFooter = ({
+  className,
+  ...props
+}) => (
+  <div
+    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
+    {...props} />
+);
+DialogFooter.displayName = "DialogFooter";
+
 // Update the export statement:
 export {
   Dialog,
   DialogTrigger,
-  DialogContent, // Added
-  DialogHeader,  // Added
-  DialogTitle,   // Added
-  DialogDescription, // Optional, but good to include
-  DialogPortal, // Optional, but often needed with Content
-  DialogOverlay // Optional, but often needed with Content
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogPortal,
+  DialogOverlay
 };

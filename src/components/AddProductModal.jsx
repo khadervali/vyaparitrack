@@ -1,4 +1,3 @@
-jsx
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@radix-ui/react-dialog";
+} from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { useToast } from '@/components/ui/use-toast';
@@ -90,7 +89,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
               <Label htmlFor="type-service">Service</Label>
             </div>
           </RadioGroup>
-        </DialogHeader>
+        </div>
         <form onSubmit={handleAddProduct} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">

@@ -91,7 +91,7 @@ const AppLayout = () => {
     { to: '/app/sales', icon: <IndianRupee />, text: 'Sales' },
     { to: '/app/purchases', icon: <ShoppingCart />, text: 'Purchases' },
     { to: '/app/reports', icon: <BarChart3 />, text: 'Reports' },
-    { to: '/app/gst-tools', icon: <FileText />, text: 'GST Tools' },
+    { to: '/app/gst', icon: <FileText />, text: 'GST Tools' },
     { to: '/app/settings', icon: <Settings />, text: 'Settings' },
   ];
 
@@ -145,14 +145,16 @@ const AppLayout = () => {
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Top navigation bar */}
           <header className="sticky top-0 h-16 flex items-center justify-between px-4 border-b bg-card/60 dark:bg-card/40 backdrop-blur-md z-20">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md lg:hidden hover:bg-accent"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
+            <div className="flex items-center">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-md lg:hidden hover:bg-accent"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 ml-auto">
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-full hover:bg-accent"
@@ -174,15 +176,25 @@ const AppLayout = () => {
                   <div className="absolute right-0 mt-2 w-48 py-1 bg-card border rounded-md shadow-lg">
                     <Link
                       to="/app/profile"
-                      className="block px-4 py-2 text-sm hover:bg-accent"
+                      className="flex items-center px-4 py-2 text-sm hover:bg-accent"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
-                      Profile
+                      <UserCircle className="h-4 w-4 mr-2" />
+                      Profile Settings
+                    </Link>
+                    <Link
+                      to="/app/settings"
+                      className="flex items-center px-4 py-2 text-sm hover:bg-accent"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Account Settings
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm hover:bg-accent"
+                      className="flex items-center w-full text-left px-4 py-2 text-sm hover:bg-accent text-red-500"
                     >
+                      <LogOut className="h-4 w-4 mr-2" />
                       Sign out
                     </button>
                   </div>

@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/components/ui/use-toast';
 
 import StockAdjustmentModal from '@/components/StockAdjustmentModal'; // Import the new modal
+import AddProductModal from '@/components/AddProductModal'; // Import the AddProductModal
+import EditProductModal from '@/components/EditProductModal'; // Import the EditProductModal
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);

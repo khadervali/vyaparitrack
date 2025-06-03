@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, PlusCircle, Search, Filter } from 'lucide-react';
 // Import NewPurchaseOrderModal component
 import NewPurchaseOrderModal from '@/components/NewPurchaseOrderModal';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
@@ -132,7 +133,28 @@ const PurchasesPage = () => {
     <NewPurchaseOrderModal
       isOpen={isNewPurchaseOrderModalOpen}
       onClose={() => setIsNewPurchaseOrderModalOpen(false)}
-      onPurchaseOrderCreated={fetchPurchaseOrders} // Assuming fetchPurchaseOrders is the function to refresh the list
+      onPurchaseOrderCreated={() => {
+        // Fetch purchase orders again when a new one is created
+        setLoading(true);
+        fetch('/api/purchaseorders')
+          .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch purchase orders');
+            return response.json();
+          })
+          .then(data => {
+            setPurchaseOrders(data);
+            setLoading(false);
+          })
+          .catch(error => {
+            console.error('Error fetching purchase orders:', error);
+            toast({
+              title: "Error",
+              description: "Failed to refresh purchase orders.",
+              variant: "destructive",
+            });
+            setLoading(false);
+          });
+      }}
     />
     </>
   );

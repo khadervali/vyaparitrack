@@ -1,2 +1,6 @@
- node_modules
-commi
+ node_modules/*
+ dist/
+backend/node_modules/
+backend/dist/
+# Ignore the backend's node_modules directory
+# Ignore the frontend's node_modules directory

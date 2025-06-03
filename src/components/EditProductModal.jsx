@@ -1,4 +1,3 @@
-jsx
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -54,12 +53,15 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
     e.preventDefault();
     setIsLoading(true);
 
-    // Construct the data to send based on item type
-    const dataToSend = {
-      name: formData.name,
-      description: formData.description,
-      price: parseFloat(formData.price), // Ensure price is a number
-      // We are not updating quantity or branchId directly via product update
+    try {
+      // Construct the data to send based on item type
+      const dataToSend = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price), // Ensure price is a number
+        // We are not updating quantity or branchId directly via product update
+      };
+      
       const response = await fetch(`/api/products/${productToEdit._id}`, {
         method: 'PUT', // or 'PATCH'
         headers: {
@@ -118,21 +120,22 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
             </Label>
             <Input id="price" type="number" value={formData.price} onChange={handleChange} className="col-span-3" required />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-          {productToEdit?.type === 'product' && ( // Conditionally render quantity for products
-           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="quantity" className="text-right">
-              Quantity
-            </Label>
-            <Input id="quantity" type="number" value={formData.quantity} onChange={handleChange} className="col-span-3" required />
-          </div>
+          {productToEdit?.type === 'product' && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="quantity" className="text-right">
+                Quantity
+              </Label>
+              <Input id="quantity" type="number" value={formData.quantity} onChange={handleChange} className="col-span-3" required />
+            </div>
           )}
-           {/* Add Branch selection if needed for editing stock in a specific branch */}
+          {/* Add Branch selection if needed for editing stock in a specific branch 
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="branchId" className="text-right">
               Branch
             </Label>
-             <Input id="branchId" value={formData.branchId} onChange={handleChange} className="col-span-3" required />
-             </div> */}
+            <Input id="branchId" value={formData.branchId} onChange={handleChange} className="col-span-3" required />
+          </div>
+          */}
           <DialogFooter>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Updating...' : 'Save Changes'}
