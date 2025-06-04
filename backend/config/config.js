@@ -1,3 +1,4 @@
+console.log(process.env);
 const config = {
     development: {
       dialect: process.env.DB_DIALECT || 'mysql',

@@ -5,8 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node server.ts",
-    "migrate": "sequelize-cli db:migrate --config ./config/config.js",
-    "migrate:undo": "sequelize-cli db:migrate:undo --config ./config/config.js"
+    "migrate": "node -r dotenv/config ./node_modules/.bin/sequelize-cli db:migrate --config ./config/config.js",
+    "migrate:undo": "node -r dotenv/config ./node_modules/.bin/sequelize-cli db:migrate:undo --config ./config/config.js"
   },
   "keywords": [],
   "author": "",
