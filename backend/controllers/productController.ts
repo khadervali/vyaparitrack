@@ -21,6 +21,8 @@ export const createProduct = async (req: Request, res: Response) => {
       salePrice,
       initialStock,
       hsnSac,
+      description, // Add description to destructuring
+      price, // Add price to destructuring
       taxRate,
     } = req.body;
 
@@ -126,7 +128,7 @@ export const removeStock = async (req: Request, res: Response) => {
 
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    const products = await Product.findAll(); // Assuming you are using Sequelize's findAll
+    const products = await Product.find({}); // Assuming you are using Mongoose's find
     res.json(products);
   } catch (error) {
     if (error instanceof Error) {
