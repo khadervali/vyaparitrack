@@ -3,25 +3,16 @@ import dotenv from 'dotenv';
 
 // Load environment variables from .env file
 dotenv.config();
-const dbConfig = {
-  dialect: 'mysql', // Manually set
-  host: 'localhost', // Manually set (or your actual host)
-  port: 8889, // <-- Manually set the correct port here
-  database: 'vyaparitrack', // Manually set
-  username: 'root', // Manually set (or your actual user)
-  password: 'Admin@123', // <-- Manually set your password here
-};
-
-console.log('Database Configuration:', { ...dbConfig, password: '********' }); // Log the manual config
 
 const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
+  // Read database details from environment variables
+  process.env.DB_NAME as string,
+  process.env.DB_USER as string,
+  process.env.DB_PASSWORD,
   {
-    host: dbConfig.host,
-    port: dbConfig.port,
-    dialect: dbConfig.dialect as 'mysql',
+    host: process.env.DB_HOST as string,
+    port: parseInt(process.env.DB_PORT || '3306', 10), // Parse port as integer, default to 3306
+    dialect: process.env.DB_DIALECT as any, // Use 'any' or specific Dialect type if possible
     logging: false,
   }
 );

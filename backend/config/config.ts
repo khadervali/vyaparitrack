@@ -14,6 +14,7 @@ const config: DbConfig = {
     username: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD ? process.env.DB_PASSWORD : undefined,
     database: process.env.DB_NAME || 'database_development',
+    port: parseInt(process.env.DB_PORT || '3306', 10),
   },
 };
 
