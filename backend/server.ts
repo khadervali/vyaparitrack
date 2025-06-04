@@ -8,6 +8,7 @@ import inventoryRoutes from './routes/inventoryRoutes';
 import productRoutes from './routes/productRoutes';
 import branchRoutes from './routes/branchRoutes';
 
+dotenv.config({ path: './.env' });
 const app = express();
 const port = process.env.PORT || 3000;
 
