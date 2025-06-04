@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ const SignupPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [role, setRole] = useState('Vendor Admin');
+  const [role, setRole] = useState(''); // Change from 'Vendor Admin'
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -43,6 +43,29 @@ const SignupPage = () => {
       setIsLoading(false);
       return;
     }
+
+    useEffect(() => {
+      const fetchRoles = async () => {
+        try {
+          const response = await fetch('http://localhost:3000/api/auth/roles'); // Adjust URL as needed
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          setRoles(data); // Update the roles state with fetched data
+        } catch (error) {
+          console.error('Error fetching roles:', error);
+          // Optionally show a toast or error message to the user
+          toast({
+            title: "Error",
+            description: "Failed to load roles. Please try again later.",
+            variant: "destructive",
+          });
+        }
+      };
+
+      fetchRoles();
+    }, []); // The empty dependency array ensures this runs only once on mount
 
     try {
       console.log('Sending signup request with data:', {
@@ -111,10 +134,14 @@ const SignupPage = () => {
               value={role}
               onChange={(e) => setRole(e.target.value)}
               className="w-full mt-1 px-3 py-2 bg-background/70 dark:bg-input border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              required // Add required attribute if needed
             >
-              <option value="Vendor Admin">Vendor Admin</option>
-              <option value="Vendor Staff">Vendor Staff</option>
-              <option value="Inventory Manager">Inventory Manager</option>
+              <option value="">Select a role</option> {/* Add a default option */}
+              {roles.map((roleOption) => (
+                <option key={roleOption.id} value={roleOption.name}>
+                  {roleOption.name}
+                </option>
+              ))}
             </select>
           </div>
           <div>

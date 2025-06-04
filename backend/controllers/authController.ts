@@ -1,10 +1,22 @@
-import { Model } from 'sequelize';
-import Instance  from 'sequelize/types/model';
+import { Model, Instance } from 'sequelize';
 import express from 'express';
-const router = express.Router();
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User, { UserAttributes } from '../models/user.model'; 
+import Role from '../models/Role'; // Import the Role model
+
+
+export const getRoles = async (req: any, res: any) => {
+  try {
+    const roles = await Role.findAll(); // Fetch all roles from the database
+    res.status(200).json(roles); // Send the roles as a JSON response
+  } catch (error: any) {
+    console.error('Error fetching roles:', error.message);
+    res.status(500).json({ message: 'Server Error', error: error.message }); // Handle any errors
+  }
+};
+
+
 
 export const signupUser = async (req: any, res: any) => {
   console.log('Received signup request:', {
@@ -23,10 +35,13 @@ export const signupUser = async (req: any, res: any) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Validate the role
-    const allowedRoles = ['Super Admin', 'Vendor Admin', 'Vendor Staff', 'Inventory Manager'];
-    if (!allowedRoles.includes(role)) {
-      return res.status(400).json({ message: 'Invalid user role' });
+      // Validate the role against roles from the database
+      const roles = await Role.findAll({ attributes: ['name'] }); // Fetch only the role names
+      const allowedRoles = roles.map(r => r.name); // Get an array of allowed role names
+
+      if (!allowedRoles.includes(role)) {
+        return res.status(400).json({ message: 'Invalid user role' });
+      }
     }
 
     // Hash the password
