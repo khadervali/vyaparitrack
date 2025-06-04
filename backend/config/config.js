@@ -1,12 +1,28 @@
-console.log(process.env);
-const config = {
-    development: {
-      dialect: process.env.DB_DIALECT || 'mysql',
-      host: process.env.DB_HOST || 'localhost',
-      username: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD ? process.env.DB_PASSWORD : undefined,
-      database: process.env.DB_NAME || 'database_development',
-    },
-  };
-  
-  module.exports = config;
+require('dotenv').config();
+
+module.exports = {
+  development: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    dialect: process.env.DB_DIALECT || 'mysql',
+    port: parseInt(process.env.DB_PORT || '3306', 10),
+  },
+  test: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME_TEST || 'database_test',
+    host: process.env.DB_HOST || 'localhost',
+    dialect: process.env.DB_DIALECT || 'mysql',
+    port: parseInt(process.env.DB_PORT_TEST || '3306', 10),
+  },
+  production: {
+    username: process.env.DB_USER_PROD,
+    password: process.env.DB_PASSWORD_PROD,
+    database: process.env.DB_NAME_PROD || 'database_production',
+    host: process.env.DB_HOST_PROD || 'localhost',
+    dialect: process.env.DB_DIALECT || 'mysql',
+    port: parseInt(process.env.DB_PORT_PROD || '3306', 10),
+  },
+};
