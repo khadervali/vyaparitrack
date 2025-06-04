@@ -19,6 +19,14 @@ async function checkDatabase() {
     const [rows, fields] = await connection.execute('SHOW TABLES;');
     console.log('Tables in the database:');
     console.log(rows);
+    
+    try {
+      const [userSchema, userFields] = await connection.execute('DESCRIBE users;');
+      console.log('\nSchema for the "users" table:');
+      console.log(userSchema);
+    } catch (describeError) {
+      console.error('\nError describing "users" table:', describeError);
+    }
 
   } catch (error) {
     console.error('Database connection or query error:', error);
