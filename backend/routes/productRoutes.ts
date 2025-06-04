@@ -2,6 +2,8 @@ const express = require('express');
 const {
   addProduct,
   getProducts,
+  getAllProducts,
+  createProduct,
   getProduct,
   updateProduct,
   deleteProduct,
@@ -12,6 +14,8 @@ const router = express.Router();
 
 router.post('/', addProduct);
 router.get('/', getProducts);
+router.get('/api/products', getAllProducts);
+router.post('/api/products', createProduct);
 router.get('/:id', getProduct);
 router.put('/:id', updateProduct); // Consider using PATCH for partial updates like stock
 router.delete('/:id', deleteProduct);

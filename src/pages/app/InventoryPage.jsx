@@ -13,12 +13,22 @@ import StockAdjustmentModal from '@/components/StockAdjustmentModal'; // Import 
 import AddProductModal from '@/components/AddProductModal'; // Import the AddProductModal
 import EditProductModal from '@/components/EditProductModal'; // Import the EditProductModal
 const InventoryPage = () => {
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // Corrected: Removed duplicate declaration
   const [searchTerm, setSearchTerm] = useState(''); // Added: State for search term
   const [editingProduct, setEditingProduct] = useState(null);
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    sku: '',
+    category: '',
+    purchasePrice: '',
+    salePrice: '',
+    initialStock: '',
+    hsnSac: '',
+    taxRate: '',
+  });
+  const [products, setProducts] = useState([]); // State to store the list of products
   const [isStockAdjustmentModalOpen, setIsStockAdjustmentModalOpen] = useState(false); // State for Stock Adjustment Modal
   const { toast } = useToast();
 
@@ -38,7 +48,7 @@ const InventoryPage = () => {
       // Assuming 'filters' is an object like { category: 'Electronics', type: 'product' }
       // Object.keys(filters).forEach(key => queryParams.append(key, filters[key])); // Uncomment and adjust as needed for filters
       const url = `/api/products?${queryParams.toString()}`;
-      const response = await fetch(url); // Replace with your actual API endpoint
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }
@@ -56,9 +66,53 @@ const InventoryPage = () => {
     }
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewProduct(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveProduct = async () => {
+    try {
+      console.log('Saving product:', newProduct); // Log data being sent
+      const response = await fetch('/api/products', { // Corrected API endpoint
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProduct),
+      });
+      if (!response.ok) { // Check for non-OK status codes
+        throw new Error('Failed to save product');
+      }
+      const addedProduct = await response.json();
+      toast({ title: 'Success', description: 'Product added successfully.' });
+      setIsAddProductModalOpen(false);
+      setNewProduct({ // Reset form fields
+        name: '',
+        sku: '',
+        category: '',
+        purchasePrice: '',
+        salePrice: '',
+        initialStock: '',
+        hsnSac: '',
+        taxRate: '',
+      });
+      fetchProducts(); // Refresh the list
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast({ title: 'Error', description: 'Failed to save product.', variant: 'destructive' });
+    }
+  };
+
+  // fetchProducts is used inside useEffect, and it depends on searchTerm.
+  // Therefore, both fetchProducts and searchTerm should be in the dependency array.
+  // explicitly can sometimes be necessary depending on ESLint rules or complex dependency trees.
   useEffect(() => {
     fetchProducts();
-  }, [toast]); // Added toast as a dependency for useEffect
+  }, [fetchProducts]);
 
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
@@ -81,7 +135,7 @@ const InventoryPage = () => {
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold text-foreground">Inventory Management</h1>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => setIsAddProductModalOpen(true)}>
           <PlusCircle className="mr-2 h-5 w-5" /> Add New Product/Service
         </Button>
       </div>
@@ -126,24 +180,31 @@ const InventoryPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {products.map((product) => (
-                  <tr key={product._id} className="border-b dark:border-border/50 hover:bg-accent/30 dark:hover:bg-accent/10">
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" className="text-center py-8 text-muted-foreground">Loading products...</td>
+                  </tr>
+                ) : products.length > 0 ? (
+                  products.map((product) => (
+                    <tr key={product.id} className="border-b dark:border-border/50 hover:bg-accent/30 dark:hover:bg-accent/10">
                     <td className="px-6 py-4 font-medium whitespace-nowrap">{product.name}</td>
                     <td className="px-6 py-4">{product.sku || 'N/A'}</td> {/* Assuming SKU might not always exist */}
                     <td className="px-6 py-4">{product.type === 'service' ? 'Service' : (product.category || 'Uncategorized')}</td> {/* Assuming category might not always exist */}
-                    <td className="px-6 py-4 text-right">{product.type === 'service' ? 'N/A' : product.stockQuantity}</td> {/* Using stockQuantity from backend */}
-                    <td className="px-6 py-4 text-right">{product.price}</td>
+                    <td className="px-6 py-4 text-right">{product.type === 'service' ? 'N/A' : product.initialStock}</td> {/* Using initialStock from backend, adjust if using current stock */}
+                    <td className="px-6 py-4 text-right">{product.salePrice || product.purchasePrice}</td> {/* Displaying sale price, fallback to purchase price */}
                     <td className="px-6 py-4 text-center">
                       <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80" onClick={() => handleEditClick(product)}>Edit</Button>{' '}
                     </td>
                   </tr>
-                ))}
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="text-center py-8 text-muted-foreground">No products or services found. Add your first one!</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
-          {products.length === 0 && (
-            <p className="text-center py-8 text-muted-foreground">No products or services found. Add your first one!</p>
-          )}
         </CardContent>
       </Card>
 
@@ -177,6 +238,9 @@ const InventoryPage = () => {
       isOpen={isAddProductModalOpen}
       onClose={() => setIsAddProductModalOpen(false)}
       onProductAdded={fetchProducts} // Refetch products after adding
+      newProductData={newProduct} // Pass state down to modal
+      onInputChange={handleChange} // Pass handler down to modal
+      onSave={handleSaveProduct} // Pass save handler to modal
     />
 
     {/* Edit Product Modal */}

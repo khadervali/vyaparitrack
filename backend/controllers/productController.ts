@@ -11,13 +11,29 @@ type ProductQuery = FilterQuery<typeof Product> & {
 // @desc    Add new product
 // @route   POST /api/products
 // @access  Private (Vendor Admin, Vendor Staff with permissions)
-export const addProduct = async (req: Request, res: Response) => {
+export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, description, price, quantity, vendor, branchId, type } = req.body;
+    const {
+      name,
+      sku,
+      category,
+      purchasePrice,
+      salePrice,
+      initialStock,
+      hsnSac,
+      taxRate,
+    } = req.body;
 
-    if (!branchId) {
-      return res.status(400).json({ message: 'Branch ID is required to add product to inventory' });
+    // Basic validation (you can add more comprehensive validation)
+    if (!name || !sku || !category || purchasePrice === undefined || salePrice === undefined || initialStock === undefined) {
+      return res.status(400).json({ message: 'Please provide all required product details.' });
     }
+
+    // Check if product with the same SKU already exists for this vendor (assuming vendor is handled by middleware/auth)
+    // const existingProduct = await Product.findOne({ sku });
+    // if (existingProduct) {
+    //   return res.status(400).json({ message: 'Product with this SKU already exists.' });
+    // }
 
     const product = new Product({
       name,
@@ -25,11 +41,16 @@ export const addProduct = async (req: Request, res: Response) => {
       price,
       // We are not storing quantity directly in Product anymore,
       // it will be managed in Inventory per branch.
-      // quantity,
-      vendor, // Assuming vendor ID is passed in the request body
+      sku,
+      category,
+      purchasePrice,
+      salePrice,
+      hsnSac,
+      taxRate,
+      // Add vendor ID from authenticated user if multi-tenancy is implemented
     });
 
-    const createdProduct = await product.save();
+    const createdProduct = await Product.create(product);
     res.status(201).json(createdProduct);
   } catch (error) {
     if (error instanceof Error) {
@@ -103,6 +124,20 @@ export const removeStock = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllProducts = async (req: Request, res: Response) => {
+  try {
+    const products = await Product.findAll(); // Assuming you are using Sequelize's findAll
+    res.json(products);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
+  }
+};
+
+// The following functions were likely intended for a different ORM (Mongoose) based on the find/findById/deleteOne usage.
 export const getProducts = async (req: Request, res: Response) => {
   try {
     const { searchTerm, filters } = req.query;
