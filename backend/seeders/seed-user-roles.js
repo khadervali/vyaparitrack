@@ -19,7 +19,22 @@ module.exports = {
         updatedAt: new Date()
       },
       {
+        name: 'Super Admin',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        name: 'Vendor Admin',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
         name: 'Vendor Staff',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        name: 'Inventory Manager',
         createdAt: new Date(),
         updatedAt: new Date()
       }
