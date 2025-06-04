@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Product from '../models/Product';
 import Inventory from '../models/Inventory';
 import { FilterQuery } from 'mongoose';
@@ -11,7 +11,7 @@ type ProductQuery = FilterQuery<typeof Product> & {
 // @desc    Add new product
 // @route   POST /api/products
 // @access  Private (Vendor Admin, Vendor Staff with permissions)
-export const createProduct = async (req: Request, res: Response) => {
+export const createProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const {
       name,
@@ -28,7 +28,7 @@ export const createProduct = async (req: Request, res: Response) => {
 
     // Basic validation (you can add more comprehensive validation)
     if (!name || !sku || !category || purchasePrice === undefined || salePrice === undefined || initialStock === undefined) {
-      return res.status(400).json({ message: 'Please provide all required product details.' });
+      res.status(400).json({ message: 'Please provide all required product details.' });
     }
 
     // Check if product with the same SKU already exists for this vendor (assuming vendor is handled by middleware/auth)
@@ -63,14 +63,14 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const addStock = async (req: Request, res: Response) => {
+export const addStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { quantity } = req.body;
     const product = await Product.findById(req.params.id);
     const { branchId } = req.body;
 
     if (!branchId || quantity === undefined) {
- return res.status(400).json({ message: 'Branch ID and quantity are required' });
+      res.status(400).json({ message: 'Branch ID and quantity are required' });
     }
 
     if (product) {
@@ -93,13 +93,13 @@ export const addStock = async (req: Request, res: Response) => {
   }
 };
 
-export const removeStock = async (req: Request, res: Response) => {
+export const removeStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { quantity } = req.body;
     const { branchId } = req.body;
 
     if (!branchId || quantity === undefined) {
-      return res.status(400).json({ message: 'Branch ID and quantity are required' });
+      res.status(400).json({ message: 'Branch ID and quantity are required' });
     }
 
     const inventory = await Inventory.findOne({ product: req.params.id, branch: branchId });
@@ -126,7 +126,7 @@ export const removeStock = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllProducts = async (req: Request, res: Response) => {
+export const getAllProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const products = await Product.find({}); // Assuming you are using Mongoose's find
     res.json(products);
@@ -140,7 +140,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 };
 
 // The following functions were likely intended for a different ORM (Mongoose) based on the find/findById/deleteOne usage.
-export const getProducts = async (req: Request, res: Response) => {
+export const getProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { searchTerm, filters } = req.query;
     let query: Record<string, any> = {};
@@ -176,7 +176,7 @@ export const getProducts = async (req: Request, res: Response) => {
   }
 };
 
-export const getProduct = async (req: Request, res: Response) => {
+export const getProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const product = await Product.findById(req.params.id);
 
@@ -195,7 +195,7 @@ export const getProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { name, description, price, quantity } = req.body;
 
@@ -222,7 +222,7 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deleteProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const product = await Product.findById(req.params.id);
 

@@ -1,19 +1,15 @@
-const express = require('express');
-const {
-  addProduct,
-  getProducts,
+import express, { Router } from 'express';
+import {
   getAllProducts,
   createProduct,
   getProduct,
-  updateProduct,
+  updateProduct, // Added updateProduct
   deleteProduct,
   addStock,
   removeStock,
-} = require('../controllers/productController');
-const router = express.Router();
+} from '../controllers/productController';
+const router = Router();
 
-router.post('/', addProduct);
-router.get('/', getProducts);
 router.get('/api/products', getAllProducts);
 router.post('/api/products', createProduct);
 router.get('/:id', getProduct);
@@ -24,5 +20,3 @@ router.post('/:id/stock/in', addStock);
 router.post('/:id/stock/out', removeStock);
 
 export default router;
-
-module.exports = router;
