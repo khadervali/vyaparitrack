@@ -19,32 +19,11 @@ const SignupPage = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState(''); // Change from 'Vendor Admin'
+  const [roles, setRoles] = useState([]); // Change from 'Vendor Admin'
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    if (!fullName || !email || !password || !confirmPassword) {
-      toast({ title: "Error", description: "Please fill in all fields.", variant: "destructive" });
-      setIsLoading(false);
-      return false;
-    } else if (password !== confirmPassword) {
-      toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
-      setIsLoading(false);
-      return false;
-    } else if (password.length < 6) {
-      toast({ title: "Error", description: "Password must be at least 6 characters long.", variant: "destructive" });
-      setIsLoading(false);
-      return false;
-    } else if (!agreedToTerms) {
-      toast({ title: "Error", description: "You must agree to the terms and conditions.", variant: "destructive" });
-      setIsLoading(false);
-      return;
-    }
-
-    useEffect(() => {
+  useEffect(() => {
       console.log('useEffect is running'); // Add this line
       const fetchRoles = async () => {
         console.log('fetchRoles is being called'); // Add this line
@@ -68,6 +47,28 @@ const SignupPage = () => {
 
       fetchRoles();
     }, []); // The empty dependency array ensures this runs only once on mount
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (!fullName || !email || !password || !confirmPassword) {
+      toast({ title: "Error", description: "Please fill in all fields.", variant: "destructive" });
+      setIsLoading(false);
+      return false;
+    } else if (password !== confirmPassword) {
+      toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
+      setIsLoading(false);
+      return false;
+    } else if (password.length < 6) {
+      toast({ title: "Error", description: "Password must be at least 6 characters long.", variant: "destructive" });
+      setIsLoading(false);
+      return false;
+    } else if (!agreedToTerms) {
+      toast({ title: "Error", description: "You must agree to the terms and conditions.", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
       
 
     try {
