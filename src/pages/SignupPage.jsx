@@ -45,7 +45,9 @@ const SignupPage = () => {
     }
 
     useEffect(() => {
+      console.log('useEffect is running'); // Add this line
       const fetchRoles = async () => {
+        console.log('fetchRoles is being called'); // Add this line
         try {
           const response = await fetch('http://localhost:3000/api/auth/roles'); // Adjust URL as needed
           if (!response.ok) {
@@ -66,6 +68,7 @@ const SignupPage = () => {
 
       fetchRoles();
     }, []); // The empty dependency array ensures this runs only once on mount
+      
 
     try {
       console.log('Sending signup request with data:', {
