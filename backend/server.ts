@@ -58,7 +58,7 @@ const startServer = async () => {
     console.log('Database connection established successfully.');
 
     // Sync database models
-    await sequelize.sync({ force: true }); // This will create the tables. Set back to false after first run
+    await sequelize.sync({ force: false }); // This will create the tables. Set back to false after first run
     console.log('Database tables created successfully.');
 
     // Start server

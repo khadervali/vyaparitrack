@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
+import Role from './Role'; // Import Role model for type definition
 
 // Define an interface for the User attributes
 export interface UserAttributes {
@@ -7,8 +8,9 @@ export interface UserAttributes {
   username: string;
   email: string;
   password: string;
-  role: string;
+  roleId: number;
   createdAt?: Date;
+  Role?: Role; // Add optional Role property
   updatedAt?: Date;
 }
 
@@ -18,7 +20,7 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public username!: string;
   public email!: string;
   public password!: string;
-  public role!: string;
+  public roleId!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -47,13 +49,9 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    role: {
-      type: DataTypes.STRING,
+    roleId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 'Vendor Staff',
-      validate: {
-        isIn: [['Super Admin', 'Vendor Admin', 'Vendor Staff', 'Inventory Manager']],
-      },
     },
   },
   {
@@ -64,4 +62,7 @@ User.init(
   }
 );
 
+User.belongsTo(Role, {
+  foreignKey: 'roleId',
+});
 export default User;

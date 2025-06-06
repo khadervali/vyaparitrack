@@ -1,5 +1,5 @@
-import { Model, Instance } from 'sequelize';
 import express from 'express';
+import { Model } from 'sequelize'; // Import Model if still needed for types
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User, { UserAttributes } from '../models/user.model'; 
@@ -16,8 +16,6 @@ export const getRoles = async (req: any, res: any) => {
   }
 };
 
-
-
 export const signupUser = async (req: any, res: any) => {
   console.log('Received signup request:', {
     body: { ...req.body, password: '***hidden***' },
@@ -28,32 +26,41 @@ export const signupUser = async (req: any, res: any) => {
 
   try {
     // Check if user with the same email already exists    
-    const existingUser: Instance<UserAttributes> | null = await User.findOne({ where: { email } });
-
+    const existingUser = await User.findOne({ where: { email } });
 
     if (existingUser !== null) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-      // Validate the role against roles from the database
-      const roles = await Role.findAll({ attributes: ['name'] }); // Fetch only the role names
-      const allowedRoles = roles.map(r => r.name); // Get an array of allowed role names
+    // Validate the role against roles from the database
+    const roles = await Role.findAll({ attributes: ['name'] }); // Fetch only the role names
+    const allowedRoles = roles.map(r => r.name); // Get an array of allowed role names
 
-      if (!allowedRoles.includes(role)) {
-        return res.status(400).json({ message: 'Invalid user role' });
-      }
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ message: 'Invalid user role' });
     }
+
+    // Find the role object to get its ID
+    const roleObject = await Role.findOne({ where: { name: role } });
+
+    // Check if the role was found
+ if (!roleObject) {
+      // This case should ideally not happen if the previous role validation is correct,
+      // but it's good for type safety and robust error handling.
+ console.error(`Role with name "${role}" not found after validation.`);
+ return res.status(400).json({ message: 'Invalid user role provided.' });
+ }
 
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user with the hashed password
-    const newUser: Instance<UserAttributes> = await User.create({
+    // Create a new user with the hashed password and roleId
+    const newUser = await User.create({
       username,
-      email,
+      email: email, // Explicitly assign email
       password: hashedPassword, // Use the hashed password
-      role,
+      roleId: roleObject.id, // Use roleObject.id instead of role
     });
 
     res.status(201).json({ message: 'User registered successfully' });
@@ -74,10 +81,12 @@ export const loginUser = async (req: any, res: any) => {
 
   try {
     // Check if user exists
-    const user: Instance<UserAttributes> | null = await User.findOne({ where: { email } });
+    const user = await User.findOne({ 
+      where: { email },
+      include: Role // Include the Role model
+    }) as User & { Role: Role | null }; // Assert the type to include Role
 
-
-    if (!user) {
+    if (!user) { // Check if user exists
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -92,14 +101,14 @@ export const loginUser = async (req: any, res: any) => {
     const payload = {
       user: {
         id: user.dataValues.id,
-        role: user.dataValues.role,
+        role: user.Role ? user.Role.name : null, // Access role name from included Role object
       },
     };
 
     const JWT_SECRET = process.env.JWT_SECRET || 'vyaparitrack-default-secret';
 
     jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }, (err: any, token: any) => {
-      if (err) throw err;
+      if (err) { console.error('JWT Sign Error:', err); throw err; }
       res.json({ token });
     });
   } catch (err: any) {
