@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Product from '../models/Product';
 import Inventory from '../models/Inventory';
 import { FilterQuery } from 'mongoose';
+import { CustomRequest } from '../middleware/authMiddleware'; // Import CustomRequest
 
 // Define a type for the query object in getProducts
 type ProductQuery = FilterQuery<typeof Product> & {
@@ -126,9 +127,9 @@ export const removeStock = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getAllProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getAllProducts = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const products = await Product.find({}); // Assuming you are using Mongoose's find
+    const products = await Product.find({ vendorId: req.user?.vendorId }); // Filter by vendorId
     res.json(products);
   } catch (error) {
     if (error instanceof Error) {
