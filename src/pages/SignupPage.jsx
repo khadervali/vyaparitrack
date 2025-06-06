@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -22,9 +22,13 @@ const SignupPage = () => {
   const [roles, setRoles] = useState([]); // Change from 'Vendor Admin'
   const { toast } = useToast();
   const navigate = useNavigate();
+  const hasFetchedRoles = useRef(false);
 
   useEffect(() => {
+    if (hasFetchedRoles.current) return; // Prevent duplicate fetch in React 18 Strict Mode
+
       console.log('useEffect is running'); // Add this line
+      hasFetchedRoles.current = true;
       const fetchRoles = async () => {
         console.log('fetchRoles is being called'); // Add this line
         try {
