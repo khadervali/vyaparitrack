@@ -48,7 +48,12 @@ const InventoryPage = () => {
       // Assuming 'filters' is an object like { category: 'Electronics', type: 'product' }
       // Object.keys(filters).forEach(key => queryParams.append(key, filters[key])); // Uncomment and adjust as needed for filters
       const url = `/api/products?${queryParams.toString()}`;
-      const response = await fetch(url);
+      const token = localStorage.getItem('token'); // Retrieve the token from local storage
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }
@@ -112,7 +117,7 @@ const InventoryPage = () => {
   // explicitly can sometimes be necessary depending on ESLint rules or complex dependency trees.
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+  }, [searchTerm]);
 
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);

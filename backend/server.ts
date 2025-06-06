@@ -5,6 +5,7 @@ import sequelize from './config/database';
 import authRoutes from './routes/authRoutes';
 import inventoryRoutes from './routes/inventoryRoutes';
 import productRoutes from './routes/productRoutes';
+import { protect } from './middleware/authMiddleware'; // Import the protect middleware
 import branchRoutes from './routes/branchRoutes';
 
 dotenv.config({ path: './.env' });
@@ -46,7 +47,7 @@ app.use('/api/auth', (req, res, next) => {
   console.log('Auth route accessed:', req.method, req.path, req.headers);
   next();
 }, authRoutes);
-app.use('/api/products', productRoutes);
+app.use('/api/products', protect, productRoutes); // Add 'protect' here
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/branches', branchRoutes);
 
