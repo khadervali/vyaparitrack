@@ -25,11 +25,13 @@ const SignupPage = () => {
   const hasFetchedRoles = useRef(false);
 
   useEffect(() => {
+    // Prevent duplicate fetch in React 18 Strict Mode
     if (hasFetchedRoles.current) return; // Prevent duplicate fetch in React 18 Strict Mode
+    hasFetchedRoles.current = true;
 
-      console.log('useEffect is running'); // Add this line
-      hasFetchedRoles.current = true;
-      const fetchRoles = async () => {
+    console.log('useEffect is running');
+    const fetchRoles = async () => {
+
         console.log('fetchRoles is being called'); // Add this line
         try {
           const response = await fetch('http://localhost:3000/api/auth/roles'); // Adjust URL as needed
@@ -37,8 +39,10 @@ const SignupPage = () => {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           const data = await response.json();
-          setRoles(data); // Update the roles state with fetched data
+          setRoles(data);
         } catch (error) {
+          console.error('Error fetching roles: status', response.status);
+          console.error('Error fetching roles: response body', await response.text());
           console.error('Error fetching roles:', error);
           // Optionally show a toast or error message to the user
           toast({
