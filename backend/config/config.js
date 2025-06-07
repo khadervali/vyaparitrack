@@ -8,6 +8,11 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT || 'mysql',
     port: parseInt(process.env.DB_PORT || '3306', 10),
+    define: {
+      freezeTableName: true,
+      underscored: true,
+      underscoredAll: true
+    }
   },
   test: {
     username: process.env.DB_USER,

@@ -1,9 +1,9 @@
-jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams } from 'react-router-dom'; // Assuming React Router for URL parameters
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Assuming similar Card component
 import { useToast } from '@/components/ui/use-toast';
+import { apiUrl } from '@/lib/api';
 
 const SalesOrderDetailPage = () => {
   const { id } = useParams(); // Get the sales order ID from the URL
@@ -17,7 +17,7 @@ const SalesOrderDetailPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/salesorders/${id}`); // Fetch specific sales order by ID
+        const response = await fetch(apiUrl(`api/salesorders/${id}`)); // Fetch specific sales order by ID
         if (!response.ok) {
           throw new Error('Failed to fetch sales order details');
         }

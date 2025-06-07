@@ -1,4 +1,3 @@
-jsx
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, PlusCircle, Search, Filter } from 'lucide-react';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { apiUrl } from '@/lib/api';
 
 const SalesOrdersPage = () => {
   const [salesOrders, setSalesOrders] = useState([]);
@@ -18,7 +18,7 @@ const SalesOrdersPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/salesorders'); // Fetch sales orders from the backend
+        const response = await fetch(apiUrl('api/salesorders')); // Fetch sales orders from the backend
         if (!response.ok) {
           throw new Error('Failed to fetch sales orders');
         }

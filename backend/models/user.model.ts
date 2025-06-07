@@ -9,6 +9,7 @@ export interface UserAttributes {
   email: string;
   password: string;
   roleId: number;
+  vendorId?: number; // Add vendorId for multi-vendor support
   createdAt?: Date;
   Role?: Role; // Add optional Role property
   updatedAt?: Date;
@@ -21,6 +22,7 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public email!: string;
   public password!: string;
   public roleId!: number;
+  public vendorId!: number; // Add vendorId property
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -52,6 +54,10 @@ User.init(
     roleId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    vendorId: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // Vendor Admins will have their own id, staff will reference their admin's vendorId
     },
   },
   {

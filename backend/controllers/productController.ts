@@ -1,13 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import Product from '../models/Product';
-import Inventory from '../models/Inventory';
-import { FilterQuery } from 'mongoose';
+import Product from '../models/Product.sequelize';
+import Inventory from '../models/Inventory.sequelize';
+import { Op } from 'sequelize';
 import { CustomRequest } from '../middleware/authMiddleware'; // Import CustomRequest
-
-// Define a type for the query object in getProducts
-type ProductQuery = FilterQuery<typeof Product> & {
-  [key: string]: any; // Allow arbitrary string keys
-};
 
 // @desc    Add new product
 // @route   POST /api/products
@@ -38,7 +33,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     //   return res.status(400).json({ message: 'Product with this SKU already exists.' });
     // }
 
-    const product = new Product({
+    const product = await Product.create({
       name,
       description,
       price,
@@ -53,8 +48,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       // Add vendor ID from authenticated user if multi-tenancy is implemented
     });
 
-    const createdProduct = await Product.create(product);
-    res.status(201).json(createdProduct);
+    res.status(201).json(product);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
@@ -67,19 +61,19 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
 export const addStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { quantity } = req.body;
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByPk(req.params.id);
     const { branchId } = req.body;
-
     if (!branchId || quantity === undefined) {
       res.status(400).json({ message: 'Branch ID and quantity are required' });
+      return;
     }
-
     if (product) {
-      let inventory = await Inventory.findOne({ product: req.params.id, branch: branchId });
+      let inventory = await Inventory.findOne({ where: { productId: req.params.id, branchId } });
       if (!inventory) {
-        inventory = new Inventory({ product: req.params.id, branch: branchId, stockQuantity: 0 });
+        inventory = await Inventory.create({ productId: req.params.id, branchId, stockQuantity: 0 });
       }
-      inventory.stockQuantity += Number(quantity);
+      const newStock = (inventory.get('stockQuantity') as number) + Number(quantity);
+      inventory.set('stockQuantity', newStock);
       await inventory.save();
       res.json(inventory);
     } else {
@@ -98,22 +92,19 @@ export const removeStock = async (req: Request, res: Response, next: NextFunctio
   try {
     const { quantity } = req.body;
     const { branchId } = req.body;
-
     if (!branchId || quantity === undefined) {
       res.status(400).json({ message: 'Branch ID and quantity are required' });
+      return;
     }
-
-    const inventory = await Inventory.findOne({ product: req.params.id, branch: branchId });
-
+    const inventory = await Inventory.findOne({ where: { productId: req.params.id, branchId } });
     if (inventory) {
- inventory.stockQuantity = Math.max(0, inventory.stockQuantity - Number(quantity));
+      const newStock = Math.max(0, (inventory.get('stockQuantity') as number) - Number(quantity));
+      inventory.set('stockQuantity', newStock);
       await inventory.save();
-
-      const product = await Product.findById(req.params.id);
-      if (product && inventory.stockQuantity < product.minStockQuantity) {
+      const product = await Product.findByPk(req.params.id);
+      if (product && newStock < (product.get('minStockQuantity') as number)) {
         // TODO: Trigger low stock alert for this product in this branch
       }
-
       res.json(inventory);
     } else {
       res.status(404).json({ message: 'Product not found' });
@@ -129,7 +120,11 @@ export const removeStock = async (req: Request, res: Response, next: NextFunctio
 
 export const getAllProducts = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const products = await Product.find({ vendorId: req.user?.vendorId }); // Filter by vendorId
+    if (!req.user?.vendorId) {
+      res.status(400).json({ message: 'Vendor ID is required' });
+      return;
+    }
+    const products = await Product.findAll({ where: { vendor: req.user.vendorId } });
     res.json(products);
   } catch (error) {
     if (error instanceof Error) {
@@ -148,12 +143,14 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
 
     // Basic search functionality
     if (searchTerm) {
-      query.$or = [
-        { name: { $regex: searchTerm, $options: 'i' } }, // Case-insensitive search by name
-        { description: { $regex: searchTerm, $options: 'i' } }, // Case-insensitive search by description
-        { sku: { $regex: searchTerm, $options: 'i' } }, // Case-insensitive search by SKU (if you add SKU to Product model)
-        // Add more fields here if needed for searching (e.g., category)
-      ];
+      query = {
+        [Op.or]: [
+          { name: { [Op.like]: `%${searchTerm}%` } }, // Case-insensitive search by name
+          { description: { [Op.like]: `%${searchTerm}%` } }, // Case-insensitive search by description
+          { sku: { [Op.like]: `%${searchTerm}%` } }, // Case-insensitive search by SKU (if you add SKU to Product model)
+          // Add more fields here if needed for searching (e.g., category)
+        ],
+      };
     }
 
     // Apply filters
@@ -166,7 +163,7 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
       }
     }
 
-    const products = await Product.find(query);
+    const products = await Product.findAll({ where: query });
     res.json(products);
   } catch (error) {
     if (error instanceof Error) {
@@ -179,7 +176,7 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
 
 export const getProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByPk(req.params.id);
 
     if (product) {
       // Add logic to check if the user has access to this product (based on vendor)
@@ -198,19 +195,19 @@ export const getProduct = async (req: Request, res: Response, next: NextFunction
 
 export const updateProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { name, description, price, quantity } = req.body;
-
-    const product = await Product.findById(req.params.id);
-
+    const { name, description, price, quantity, type, stockQuantity, minStockQuantity } = req.body;
+    const product = await Product.findByPk(req.params.id);
     if (product) {
-      // Add logic to check if the user has permission to update this product
-      product.name = name || product.name;
-      product.description = description || product.description;
-      product.price = price || product.price;
-      // product.quantity = quantity || product.quantity; // Quantity is now managed in Inventory
-
-      const updatedProduct = await product.save();
-      res.json(updatedProduct);
+      await product.update({
+        name,
+        description,
+        price,
+        quantity,
+        type,
+        stockQuantity,
+        minStockQuantity,
+      });
+      res.json(product);
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
@@ -225,11 +222,11 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 
 export const deleteProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByPk(req.params.id);
 
     if (product) {
       // Add logic to check if the user has permission to delete this product
-      await product.deleteOne();
+      await product.destroy();
       res.json({ message: 'Product removed' });
     } else {
       res.status(404).json({ message: 'Product not found' });

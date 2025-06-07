@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { PlusCircle } from 'lucide-react';
+import { apiUrl } from '@/lib/api';
 
-const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated }) => {
+const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated, products }) => {
   const [formData, setFormData] = useState({
     supplier: '',
     date: '',
@@ -17,30 +18,13 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated }) => {
   const [newItem, setNewItem] = useState({ product: '', quantity: 0, unitPrice: 0 });
   const [isLoading, setIsLoading] = useState(false);
   const [editingItemIndex, setEditingItemIndex] = useState(null);
-  const [fetchingProducts, setFetchingProducts] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
-      const fetchProducts = async () => {
-        setFetchingProducts(true);
-        try {
-          const response = await fetch('/api/products'); // Fetch products to select for items
-          if (!response.ok) {
-            throw new Error('Failed to fetch products');
-          }
-          const data = await response.json();
-          setAvailableProducts(data);
-        } catch (error) {
-          console.error('Error fetching products:', error);
-          toast({ title: 'Error', description: 'Failed to load products.', variant: 'destructive' });
-        } finally {
-          setFetchingProducts(false);
-        }
-      };
-      fetchProducts();
+      setAvailableProducts(products || []);
     }
-  }, [isOpen, toast]); // Fetch products when the modal opens
+  }, [isOpen, products]); // Update available products when the modal opens
 
   const handleCreatePurchaseOrder = async (e) => {
     e.preventDefault();
@@ -56,7 +40,7 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated }) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/purchaseorders', {
+      const response = await fetch(apiUrl('api/purchaseorders'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -173,10 +157,7 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated }) => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
                  <div className="sm:col-span-3">
                     <Label htmlFor="product">Product</Label>
-                     {fetchingProducts ? (
-                       <p className="text-muted-foreground text-sm">Loading products...</p>
-                     ) : (
-                    <select
+                     <select
                       id="product"
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       value={newItem.product}
@@ -187,7 +168,6 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated }) => {
                         <option key={product._id} value={product._id}>{product.name} ({product.type})</option>
                       ))}
                     </select>
-                     )}
                  </div>
                  <div>
                     <Label htmlFor="quantity">Quantity</Label>

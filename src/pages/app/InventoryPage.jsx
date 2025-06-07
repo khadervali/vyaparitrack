@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { apiUrl } from '@/lib/api';
 
-import StockAdjustmentModal from '@/components/StockAdjustmentModal'; // Import the new modal
-import AddProductModal from '@/components/AddProductModal'; // Import the AddProductModal
-import EditProductModal from '@/components/EditProductModal'; // Import the EditProductModal
+import StockAdjustmentModal from '@/components/StockAdjustmentModal';
+import AddProductModal from '@/components/AddProductModal';
+import EditProductModal from '@/components/EditProductModal';
 const InventoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
@@ -47,11 +48,10 @@ const InventoryPage = () => {
       if (searchTerm) queryParams.append('searchTerm', searchTerm);
       // Assuming 'filters' is an object like { category: 'Electronics', type: 'product' }
       // Object.keys(filters).forEach(key => queryParams.append(key, filters[key])); // Uncomment and adjust as needed for filters
-      const url = `/api/products?${queryParams.toString()}`;
-      const token = localStorage.getItem('token'); // Retrieve the token from local storage
-      const response = await fetch(url, {
+      const token = localStorage.getItem('token'); // Fix: define token before using
+      const response = await fetch(apiUrl(`api/products?${queryParams.toString()}`), {
         headers: {
-          'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+          'Authorization': `Bearer ${token}`,
         },
       });
       if (!response.ok) {
@@ -82,7 +82,7 @@ const InventoryPage = () => {
   const handleSaveProduct = async () => {
     try {
       console.log('Saving product:', newProduct); // Log data being sent
-      const response = await fetch('/api/products', { // Corrected API endpoint
+      const response = await fetch(apiUrl('api/products'), { // Corrected API endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ const InventoryPage = () => {
   return (
     <>
     <motion.div
- className="space-y-6"
+      className="space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -242,25 +242,26 @@ const InventoryPage = () => {
     <AddProductModal
       isOpen={isAddProductModalOpen}
       onClose={() => setIsAddProductModalOpen(false)}
-      onProductAdded={fetchProducts} // Refetch products after adding
-      newProductData={newProduct} // Pass state down to modal
-      onInputChange={handleChange} // Pass handler down to modal
-      onSave={handleSaveProduct} // Pass save handler to modal
+      onProductAdded={fetchProducts}
+      products={products} // Pass products as prop
+      newProductData={newProduct}
+      onInputChange={handleChange}
+      onSave={handleSaveProduct}
     />
 
-    {/* Edit Product Modal */}
     <EditProductModal
       isOpen={isEditModalOpen}
       onClose={handleCloseEditModal}
       productToEdit={editingProduct}
-      onProductUpdated={fetchProducts} // Refetch products after editing
+      onProductUpdated={fetchProducts}
+      products={products} // Pass products as prop
     />
 
-    {/* Stock Adjustment Modal */}
     <StockAdjustmentModal
       isOpen={isStockAdjustmentModalOpen}
       onClose={() => setIsStockAdjustmentModalOpen(false)}
-      onStockAdjusted={fetchProducts} // Pass fetchProducts as a prop
+      onStockAdjusted={fetchProducts}
+      products={products} // Pass products as prop
     />
     </>
   );

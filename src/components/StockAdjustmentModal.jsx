@@ -18,60 +18,48 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
+import { apiUrl } from '@/lib/api';
 
 
-const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted }) => {
+const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) => {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
   const [adjustmentType, setAdjustmentType] = useState('stock-in'); // 'stock-in' or 'stock-out'
   const [quantity, setQuantity] = useState('');
-  const [products, setProducts] = useState([]); // State to store fetched products
+  const [productList, setProductList] = useState([]);
   const [branches, setBranches] = useState([]); // State to store fetched branches
   const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
-      // Fetch products
-      const fetchProducts = async () => {
-        try {
-          // Replace with your actual API endpoint for fetching products
-          const response = await fetch('/api/products');
-          if (!response.ok) {
-            throw new Error('Failed to fetch products');
-          }
-          const data = await response.json();
-          setProducts(data);
-        } catch (error) {
-          console.error('Error fetching products:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load products for adjustment.",
-            variant: "destructive",
-          });
-        }
-      };
+      setProductList(products || []);
+    }
+  }, [isOpen, products]);
 
-      // Fetch branches
-      const fetchBranches = async () => {
-        try {
-          // Replace with your actual API endpoint for fetching branches
-          const response = await fetch('/api/branches');
-          if (!response.ok) {
-            throw new Error('Failed to fetch branches');
-          }
-          const data = await response.json();
-          setBranches(data);
-        } catch (error) {
-          console.error('Error fetching branches:', error);
-           toast({
-            title: "Error",
-            description: "Failed to load branches for adjustment.",
-            variant: "destructive",
-          });
-        }
-      };
+  // Removed fetchProducts and related code
 
-      fetchProducts();
+  // Fetch branches
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        // Replace with your actual API endpoint for fetching branches
+        const response = await fetch(apiUrl('api/branches'));
+        if (!response.ok) {
+          throw new Error('Failed to fetch branches');
+        }
+        const data = await response.json();
+        setBranches(data);
+      } catch (error) {
+        console.error('Error fetching branches:', error);
+         toast({
+          title: "Error",
+          description: "Failed to load branches for adjustment.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (isOpen) {
       fetchBranches();
     }
   }, [isOpen, toast]); // Fetch data when the modal opens or toast changes
@@ -89,7 +77,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted }) => {
     const endpoint = adjustmentType === 'stock-in' ? '/api/inventory/stock-in' : '/api/inventory/stock-out';
 
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(apiUrl(endpoint), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,7 +130,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted }) => {
                 <SelectValue placeholder="Select a product" />
               </SelectTrigger>
               <SelectContent>
-                {products.map((product) => (
+                {productList.map((product) => (
                   <SelectItem key={product._id} value={product._id}>{product.name}</SelectItem>
                 ))}
               </SelectContent>

@@ -13,6 +13,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { useToast } from '@/components/ui/use-toast';
+import { apiUrl } from '@/lib/api';
 
 
 const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
@@ -30,11 +31,12 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/products', {
+      const token = localStorage.getItem('token');
+      const response = await fetch(apiUrl('api/products'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Add authorization header if needed, e.g., 'Authorization': `Bearer ${localStorage.getItem('token')}`
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           name,

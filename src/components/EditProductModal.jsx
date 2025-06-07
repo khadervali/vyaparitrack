@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { apiUrl } from '@/lib/api';
 
 const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) => {
   const [formData, setFormData] = useState({
@@ -62,7 +63,7 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
         // We are not updating quantity or branchId directly via product update
       };
       
-      const response = await fetch(`/api/products/${productToEdit._id}`, {
+      const response = await fetch(apiUrl(`api/products/${productToEdit._id}`), {
         method: 'PUT', // or 'PATCH'
         headers: {
           'Content-Type': 'application/json',

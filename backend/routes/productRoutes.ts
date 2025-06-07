@@ -10,8 +10,8 @@ import {
 } from '../controllers/productController';
 const router = Router();
 
-router.get('/api/products', getAllProducts);
-router.post('/api/products', createProduct);
+router.get('/', getAllProducts);
+router.post('/', createProduct);
 router.get('/:id', getProduct);
 router.put('/:id', updateProduct); // Consider using PATCH for partial updates like stock
 router.delete('/:id', deleteProduct);

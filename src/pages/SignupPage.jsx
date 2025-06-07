@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select } from "@/components/ui/select";
+import { apiUrl } from '@/lib/api';
 
 const SignupPage = () => {
   const [fullName, setFullName] = useState('');
@@ -34,7 +35,7 @@ const SignupPage = () => {
 
         console.log('fetchRoles is being called'); // Add this line
         try {
-          const response = await fetch('http://localhost:3000/api/auth/roles'); // Adjust URL as needed
+          const response = await fetch(apiUrl('api/auth/roles')); // Adjust URL as needed
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
@@ -87,11 +88,10 @@ const SignupPage = () => {
         role
       });
       
-      const response = await fetch('http://localhost:3000/api/auth/signup', {
+      const response = await fetch(apiUrl('api/auth/signup'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
         body: JSON.stringify({
           username: fullName,

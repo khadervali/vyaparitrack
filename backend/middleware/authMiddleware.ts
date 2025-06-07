@@ -28,6 +28,7 @@ const protect = (req: CustomRequest, res: Response, next: NextFunction) => {
     } catch (error) {
       console.error('Error verifying token:', error);
       res.status(401).json({ message: 'Not authorized, token failed' });
+      next({path: "/login"});
     }
   }
 

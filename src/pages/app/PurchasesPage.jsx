@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { apiUrl } from '@/lib/api';
 
 const PurchasesPage = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -18,7 +19,7 @@ const PurchasesPage = () => {
     const fetchPurchaseOrders = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/purchaseorders'); // Replace with your actual API endpoint
+        const response = await fetch(apiUrl('api/purchaseorders')); // Replace with your actual API endpoint
         if (!response.ok) {
           throw new Error('Failed to fetch purchase orders');
         }
@@ -136,7 +137,7 @@ const PurchasesPage = () => {
       onPurchaseOrderCreated={() => {
         // Fetch purchase orders again when a new one is created
         setLoading(true);
-        fetch('/api/purchaseorders')
+        fetch(apiUrl('api/purchaseorders'))
           .then(response => {
             if (!response.ok) throw new Error('Failed to fetch purchase orders');
             return response.json();
