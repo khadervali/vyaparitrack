@@ -39,10 +39,6 @@ module.exports = {
         allowNull: false,
         defaultValue: 10,
       },
-      vendor: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,

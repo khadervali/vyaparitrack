@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend:seed": "cd backend && npm run seed",
+    "backend:migrate": "cd backend && npm run migrate",
+    "db:reset": "cd backend && npm run db:reset",
+    "start:all": "concurrently \"npm run dev\" \"cd backend && npm run dev\""
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.0.5",
@@ -41,6 +45,7 @@
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.3",
     "terser": "^5.39.0",
-    "vite": "^4.4.5"
+    "vite": "^4.4.5",
+    "concurrently": "^8.2.0"
   }
 }

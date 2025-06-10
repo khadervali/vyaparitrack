@@ -34,6 +34,7 @@ Role.init(
     tableName: 'roles',
     sequelize,
     timestamps: true,
+    underscored: true  // Add this line to use snake_case
   }
 );
 

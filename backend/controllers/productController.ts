@@ -1,13 +1,14 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import Product from '../models/Product.sequelize';
 import Inventory from '../models/Inventory.sequelize';
 import { Op } from 'sequelize';
-import { CustomRequest } from '../middleware/authMiddleware'; // Import CustomRequest
+import { CustomRequest } from '../middleware/authMiddleware';
+
 
 // @desc    Add new product
 // @route   POST /api/products
 // @access  Private (Vendor Admin, Vendor Staff with permissions)
-export const createProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
       name,
@@ -17,35 +18,27 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       salePrice,
       initialStock,
       hsnSac,
-      description, // Add description to destructuring
-      price, // Add price to destructuring
+      description,
+      price,
       taxRate,
     } = req.body;
 
     // Basic validation (you can add more comprehensive validation)
     if (!name || !sku || !category || purchasePrice === undefined || salePrice === undefined || initialStock === undefined) {
       res.status(400).json({ message: 'Please provide all required product details.' });
+      return;
     }
-
-    // Check if product with the same SKU already exists for this vendor (assuming vendor is handled by middleware/auth)
-    // const existingProduct = await Product.findOne({ sku });
-    // if (existingProduct) {
-    //   return res.status(400).json({ message: 'Product with this SKU already exists.' });
-    // }
 
     const product = await Product.create({
       name,
       description,
       price,
-      // We are not storing quantity directly in Product anymore,
-      // it will be managed in Inventory per branch.
       sku,
-      category,
+      category, 
       purchasePrice,
       salePrice,
       hsnSac,
       taxRate,
-      // Add vendor ID from authenticated user if multi-tenancy is implemented
     });
 
     res.status(201).json(product);
@@ -58,85 +51,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const addStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { quantity } = req.body;
-    const product = await Product.findByPk(req.params.id);
-    const { branchId } = req.body;
-    if (!branchId || quantity === undefined) {
-      res.status(400).json({ message: 'Branch ID and quantity are required' });
-      return;
-    }
-    if (product) {
-      let inventory = await Inventory.findOne({ where: { productId: req.params.id, branchId } });
-      if (!inventory) {
-        inventory = await Inventory.create({ productId: req.params.id, branchId, stockQuantity: 0 });
-      }
-      const newStock = (inventory.get('stockQuantity') as number) + Number(quantity);
-      inventory.set('stockQuantity', newStock);
-      await inventory.save();
-      res.json(inventory);
-    } else {
-      res.status(404).json({ message: 'Product not found' });
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
-  }
-};
-
-export const removeStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { quantity } = req.body;
-    const { branchId } = req.body;
-    if (!branchId || quantity === undefined) {
-      res.status(400).json({ message: 'Branch ID and quantity are required' });
-      return;
-    }
-    const inventory = await Inventory.findOne({ where: { productId: req.params.id, branchId } });
-    if (inventory) {
-      const newStock = Math.max(0, (inventory.get('stockQuantity') as number) - Number(quantity));
-      inventory.set('stockQuantity', newStock);
-      await inventory.save();
-      const product = await Product.findByPk(req.params.id);
-      if (product && newStock < (product.get('minStockQuantity') as number)) {
-        // TODO: Trigger low stock alert for this product in this branch
-      }
-      res.json(inventory);
-    } else {
-      res.status(404).json({ message: 'Product not found' });
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
-  }
-};
-
-export const getAllProducts = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    if (!req.user?.vendor_id) {
-      res.status(400).json({ message: 'Vendor ID is required' });
-      return;
-    }
-    const products = await Product.findAll({ where: { vendor_id: req.user.vendor_id } });
-    res.json(products);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'An unknown error occurred' });
-    }
-  }
-};
-
-// The following functions were likely intended for a different ORM (Mongoose) based on the find/findById/deleteOne usage.
-export const getProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
     const { searchTerm, filters } = req.query;
     let query: Record<string, any> = {};
@@ -174,12 +89,11 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const product = await Product.findByPk(req.params.id);
 
     if (product) {
-      // Add logic to check if the user has access to this product (based on vendor)
       res.json(product);
     } else {
       res.status(404).json({ message: 'Product not found' });
@@ -193,7 +107,7 @@ export const getProduct = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const updateProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description, price, quantity, type, stockQuantity, minStockQuantity } = req.body;
     const product = await Product.findByPk(req.params.id);
@@ -220,17 +134,99 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const product = await Product.findByPk(req.params.id);
 
     if (product) {
-      // Add logic to check if the user has permission to delete this product
       await product.destroy();
       res.json({ message: 'Product removed' });
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
+  }
+};
+
+export const addStock = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { quantity } = req.body;
+    const product = await Product.findByPk(req.params.id);
+    const { branchId } = req.body;
+    if (!branchId || quantity === undefined) {
+      res.status(400).json({ message: 'Branch ID and quantity are required' });
+      return;
+    }
+    if (product) {
+      let inventory = await Inventory.findOne({ where: { productId: req.params.id, branchId } });
+      if (!inventory) {
+        inventory = await Inventory.create({ productId: req.params.id, branchId, stockQuantity: 0 });
+      }
+      const newStock = (inventory.get('stockQuantity') as number) + Number(quantity);
+      inventory.set('stockQuantity', newStock);
+      await inventory.save();
+      res.json(inventory);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
+  }
+};
+
+export const removeStock = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { quantity } = req.body;
+    const { branchId } = req.body;
+    if (!branchId || quantity === undefined) {
+      res.status(400).json({ message: 'Branch ID and quantity are required' });
+      return;
+    }
+    const inventory = await Inventory.findOne({ where: { productId: req.params.id, branchId } });
+    if (inventory) {
+      const newStock = Math.max(0, (inventory.get('stockQuantity') as number) - Number(quantity));
+      inventory.set('stockQuantity', newStock);
+      await inventory.save();
+      const product = await Product.findByPk(req.params.id);
+      if (product && newStock < (product.get('minStockQuantity') as number)) {
+        // TODO: Trigger low stock alert for this product in this branch
+      }
+      res.json(inventory);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unknown error occurred' });
+    }
+  }
+};
+
+export const getAllProducts = async (req: CustomRequest, res: Response): Promise<void> => {
+  try {
+    let where = {};
+    
+    if (req.user?.role !== 'Super Admin') {
+      if (!req.user?.vendor_id) {
+        res.status(400).json({ message: 'Vendor ID is required' });
+        return;
+      }
+      where = { vendor_id: req.user.vendor_id };
+    }
+
+    const products = await Product.findAll({ where });
+    res.json(products);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ message: error.message });
