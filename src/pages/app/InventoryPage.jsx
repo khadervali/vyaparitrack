@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Package, PlusCircle, Search, Filter, FileSpreadsheet, FileText as FileTextIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ const InventoryPage = () => {
   const [products, setProducts] = useState([]); // State to store the list of products
   const [isStockAdjustmentModalOpen, setIsStockAdjustmentModalOpen] = useState(false); // State for Stock Adjustment Modal
   const { toast } = useToast();
+  const isMounted = useRef(false);
 
   const handleExportExcel = () => {
     alert("Export to Excel functionality (placeholder).");
@@ -116,6 +117,10 @@ const InventoryPage = () => {
   // Therefore, both fetchProducts and searchTerm should be in the dependency array.
   // explicitly can sometimes be necessary depending on ESLint rules or complex dependency trees.
   useEffect(() => {
+    // Use ref to prevent double fetch in strict mode or on subsequent renders
+    if (!isMounted.current) {
+      isMounted.current = true;
+    }
     fetchProducts();
   }, [searchTerm]);
 
