@@ -9,15 +9,24 @@ export interface CustomRequest extends Request {
   };
 }
 
-export const protect = async (req: CustomRequest, res: Response, next: NextFunction) => {
+export const protect = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
+  // Ensure JWT_SECRET is defined
+  if (!process.env.JWT_SECRET) {
+    console.error('JWT_SECRET is not defined in environment variables.');
+    res.status(500).json({ message: 'Internal server error: JWT secret not configured.' });
+ return;
+  }
+  const jwtSecret = process.env.JWT_SECRET;
   try {
     const token = req.headers.authorization?.split(' ')[1];
-    
+
     if (!token) {
       res.status(401).json({ message: 'Not authorized, no token' });
+ return;
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    if (typeof jwtSecret === 'string') {
+ const decoded = jwt.verify(token, jwtSecret) as any;
     req.user = {
       id: decoded.user.id,
       role: decoded.user.role, // Changed from vendorId to vendor_id
@@ -25,6 +34,11 @@ export const protect = async (req: CustomRequest, res: Response, next: NextFunct
     };
 
     next();
+    } else {
+      // This case should ideally not be reached due to the initial check, but good for type safety
+      res.status(500).json({ message: 'Internal server error: JWT secret is not a string.' });
+ return;
+    }
   } catch (error) {
     res.status(401).json({ message: 'Not authorized' });
   }
