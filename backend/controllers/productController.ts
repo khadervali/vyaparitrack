@@ -117,8 +117,8 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
         description,
         price,
         quantity,
-        type,
-        stockQuantity,
+ type,
+        stock_quantity: stockQuantity,
         minStockQuantity,
       });
       res.json(product);
