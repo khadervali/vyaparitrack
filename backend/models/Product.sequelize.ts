@@ -30,13 +30,15 @@ Product.init({
     type: DataTypes.ENUM('product', 'service'),
     allowNull: false,
   },
-  stock_quantity: {
+  stockQuantity: {
     type: DataTypes.INTEGER,
+    field: 'stockQuantity', // Explicitly map to the database column name
     allowNull: true,
     defaultValue: 0,
   },
-  min_stock_quantity: {
+  minStockQuantity: {
     type: DataTypes.INTEGER,
+    field: 'minStockQuantity', // Explicitly map to the database column name
     allowNull: false,
     defaultValue: 10,
   },
@@ -48,12 +50,22 @@ Product.init({
       key: 'id'
     }
   },
+  createdAt: {
+    type: DataTypes.DATE,
+ field: 'createdAt', // Explicitly map to the database column name
+    allowNull: false,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+ field: 'updatedAt', // Explicitly map to the database column name
+    allowNull: false,
+  },
 }, {
   sequelize,
   modelName: 'Product',
   tableName: 'products',
   timestamps: true,
-  underscored: true
+  underscored: false
 });
 
 export default Product;
