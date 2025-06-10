@@ -9,15 +9,15 @@ Inventory.init({
     autoIncrement: true,
     primaryKey: true,
   },
-  productId: {
+  product_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  branchId: {
+  branch_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  stockQuantity: {
+  stock_quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 0,
@@ -27,6 +27,7 @@ Inventory.init({
   modelName: 'Inventory',
   tableName: 'inventories',
   timestamps: true,
+  underscored: true,
 });
 
 export default Inventory;

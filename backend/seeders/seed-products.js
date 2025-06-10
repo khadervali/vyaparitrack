@@ -8,11 +8,11 @@ module.exports = {
         price: 100.0,
         quantity: 50,
         type: 'product',
-        stockQuantity: 50,
-        minStockQuantity: 10,
-        vendor: 1, // Adjust vendor ID as needed
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        stock_quantity: 50,
+        min_stock_quantity: 10,
+        vendor_id: 1, // Adjust vendor ID as needed
+        created_at: new Date(),
+        updated_at: new Date(),
       },
       {
         name: 'Sample Service 1',
@@ -20,11 +20,11 @@ module.exports = {
         price: 200.0,
         quantity: 0,
         type: 'service',
-        stockQuantity: 0,
-        minStockQuantity: 0,
-        vendor: 1, // Adjust vendor ID as needed
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        stock_quantity: 0,
+        min_stock_quantity: 0,
+        vendor_id: 1, // Adjust vendor ID as needed
+        created_at: new Date(),
+        updated_at: new Date(),
       },
       {
         name: 'Sample Product 2',
@@ -32,8 +32,8 @@ module.exports = {
         price: 150.0,
         quantity: 30,
         type: 'product',
-        stockQuantity: 30,
-        minStockQuantity: 5,
+        stock_quantity: 30,
+        min_stock_quantity: 5,
         vendor: 1, // Adjust vendor ID as needed
         createdAt: new Date(),
         updatedAt: new Date(),

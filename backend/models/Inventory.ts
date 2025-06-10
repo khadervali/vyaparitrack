@@ -20,7 +20,7 @@ const InventorySchema: Schema = new Schema(
       ref: 'Branch',
       required: true,
     },
-    stockQuantity: {
+    stock_quantity: {
       type: Number,
       required: true,
       default: 0,

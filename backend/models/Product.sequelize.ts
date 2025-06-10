@@ -1,6 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
-import Vendor from './Vendor.sequelize';
 
 class Product extends Model {}
 
@@ -31,17 +30,17 @@ Product.init({
     type: DataTypes.ENUM('product', 'service'),
     allowNull: false,
   },
-  stockQuantity: {
+  stock_quantity: {
     type: DataTypes.INTEGER,
     allowNull: true,
     defaultValue: 0,
   },
-  minStockQuantity: {
+  min_stock_quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 10,
   },
-  vendor_id: {  // Changed from vendor to vendor_id
+  vendor_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
@@ -54,10 +53,7 @@ Product.init({
   modelName: 'Product',
   tableName: 'products',
   timestamps: true,
-  underscored: true  // Added to ensure column names are underscored
+  underscored: true
 });
-
-// Add the association
-Product.belongsTo(Vendor, { foreignKey: 'vendor_id' });
 
 export default Product;

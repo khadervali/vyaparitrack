@@ -120,11 +120,11 @@ export const removeStock = async (req: Request, res: Response, next: NextFunctio
 
 export const getAllProducts = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    if (!req.user?.vendorId) {
+    if (!req.user?.vendor_id) {
       res.status(400).json({ message: 'Vendor ID is required' });
       return;
     }
-    const products = await Product.findAll({ where: { vendor: req.user.vendorId } });
+    const products = await Product.findAll({ where: { vendor_id: req.user.vendor_id } });
     res.json(products);
   } catch (error) {
     if (error instanceof Error) {

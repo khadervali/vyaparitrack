@@ -4,29 +4,29 @@ import mongoose, { Document, Schema, Types } from 'mongoose';
 interface ISalesOrderItem extends Document {
   product: Types.ObjectId; // Ref to Product model
   quantity: number;
-  unitPrice: number;
+  unit_price: number;
   subtotal: number;
-  salesOrder: Types.ObjectId; // Ref to SalesOrder model
+  sales_order: Types.ObjectId; // Ref to SalesOrder model
 }
 
 // Define the interface for SalesOrder
 export interface ISalesOrder extends Document {
-  orderId: string;
+  order_id: string;
   date: Date;
   customer: Types.ObjectId; // Ref to Customer model (to be created)
   items: Types.ObjectId[] | ISalesOrderItem[]; // Ref to SalesOrderItem model
-  totalAmount: number;
+  total_amount: number;
   status: 'Draft' | 'Pending' | 'Completed' | 'Cancelled';
   vendor: Types.ObjectId; // Ref to Vendor model (to be created)
   createdBy: Types.ObjectId; // Ref to User model (assuming User model exists)
 }
 
 const SalesOrderSchema: Schema = new Schema({
-  orderId: { type: String, required: true, unique: true },
+  order_id: { type: String, required: true, unique: true },
   date: { type: Date, required: true, default: Date.now },
   customer: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
   items: [{ type: Schema.Types.ObjectId, ref: 'SalesOrderItem' }],
-  totalAmount: { type: Number, required: true, default: 0 },
+  total_amount: { type: Number, required: true, default: 0 },
   status: {
     type: String,
     required: true,

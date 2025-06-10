@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 export interface CustomRequest extends Request {
   user?: {
     id: string; // Assuming the user ID is stored in the token payload
-    vendorId: string; // Add vendorId here
+    vendor_id: string; // Add vendor_id here
     // Add other user properties from the token payload here
   };
 }
@@ -22,7 +22,7 @@ const protect = (req: CustomRequest, res: Response, next: NextFunction) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string }; // Assuming the token payload has an 'id' field
 
       // Attach user to the request
-      req.user = { id: decoded.id, vendorId: (decoded as any).vendorId }; // Assuming vendorId is also in the payload
+      req.user = { id: decoded.id, vendor_id: (decoded as any).vendor_id }; // Assuming vendor_id is also in the payload
 
       next();
     } catch (error) {

@@ -1,8 +1,10 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
 import Product from './Product.sequelize';
 
-const Vendor = sequelize.define('vendors', {
+class Vendor extends Model {}
+
+Vendor.init({
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -24,9 +26,10 @@ const Vendor = sequelize.define('vendors', {
     type: DataTypes.TEXT
   }
 }, {
-  underscored: true
+  underscored: true,
+  sequelize,
+  modelName: 'Vendor',
+  tableName: 'vendors'
 });
-
-Vendor.hasMany(Product, { foreignKey: 'vendor_id' });
 
 export default Vendor;

@@ -37,13 +37,13 @@ const productSchema: Schema = new mongoose.Schema({
     required: true,
     enum: ['product', 'service'],
   },
-  stockQuantity: { // Added stockQuantity field
+  stock_quantity: { // Added stock_quantity field
     type: Number,
     required: false, // Made optional
     min: 0,
     default: 0, // Initialized to 0
   },
-  minStockQuantity: { // Added minStockQuantity field
+  min_stock_quantity: { // Added min_stock_quantity field
     type: Number,
     required: true,
     default: 10, // Default value set to 10

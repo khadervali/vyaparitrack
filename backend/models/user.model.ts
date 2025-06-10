@@ -8,11 +8,14 @@ export interface UserAttributes {
   username: string;
   email: string;
   password: string;
-  roleId: number;
-  vendorId?: number; // Add vendorId for multi-vendor support
-  createdAt?: Date;
+  role_id: number;
+  vendor_id?: number; // Add vendor_id for multi-vendor support
+  first_name?: string;
+  last_name?: string;
+  is_active?: boolean;
+  created_at?: Date;
+  updated_at?: Date;
   Role?: Role; // Add optional Role property
-  updatedAt?: Date;
 }
 
 // Define the model
@@ -21,10 +24,14 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public username!: string;
   public email!: string;
   public password!: string;
-  public roleId!: number;
-  public vendorId!: number; // Add vendorId property
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  public role_id!: number;
+  public vendor_id!: number;
+  public first_name?: string;
+  public last_name?: string;
+  public is_active?: boolean;
+  public readonly created_at!: Date;
+  public readonly updated_at!: Date;
+  public Role?: Role;
 }
 
 User.init(
@@ -51,11 +58,24 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    roleId: {
+    first_name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    last_name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    role_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    vendorId: {
+    vendor_id: {
       type: DataTypes.INTEGER,
       allowNull: true, // Vendor Admins will have their own id, staff will reference their admin's vendorId
     },
@@ -63,12 +83,13 @@ User.init(
   {
     sequelize,
     modelName: 'User',
-    tableName: 'Users',
+    tableName: 'users',
     timestamps: true,
+    underscored: true,
   }
 );
 
 User.belongsTo(Role, {
-  foreignKey: 'roleId',
+  foreignKey: 'role_id',
 });
 export default User;

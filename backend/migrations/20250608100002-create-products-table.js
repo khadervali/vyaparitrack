@@ -29,12 +29,12 @@ module.exports = {
         type: Sequelize.ENUM('product', 'service'),
         allowNull: false,
       },
-      stock_quantity: {
+      stockQuantity: {
         type: Sequelize.INTEGER,
         allowNull: true,
         defaultValue: 0,
       },
-      min_stock_quantity: {
+      minStockQuantity: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 10,
@@ -43,12 +43,12 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      created_at: {
+      createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
-      updated_at: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const PurchaseOrderSchema = new mongoose.Schema({
-  orderId: {
+  order_id: {
     type: String,
     required: true,
     unique: true,
@@ -22,7 +22,7 @@ const PurchaseOrderSchema = new mongoose.Schema({
       ref: 'PurchaseOrderItem',
     },
   ],
-  totalAmount: {
+  total_amount: {
     type: Number,
     default: 0,
   },
@@ -36,7 +36,7 @@ const PurchaseOrderSchema = new mongoose.Schema({
     ref: 'Vendor', // Assuming you have a Vendor model
     required: true,
   },
-  createdBy: {
+  created_by: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Assuming you have a User model
     required: true,

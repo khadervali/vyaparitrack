@@ -55,12 +55,12 @@ export const signupUser = async (req: any, res: any) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user with the hashed password and roleId
+    // Create a new user with the hashed password and role_id
     const newUser = await User.create({
       username,
       email: email, // Explicitly assign email
       password: hashedPassword, // Use the hashed password
-      roleId: roleObject.id, // Use roleObject.id instead of role
+      role_id: roleObject.id, // Use roleObject.id instead of role
     });
 
     res.status(201).json({ message: 'User registered successfully' });

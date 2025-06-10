@@ -6,9 +6,9 @@ import { CustomRequest } from '../middleware/authMiddleware'; // Assuming you ha
 export const addBranch = async (req: CustomRequest, res: Response) => {
   try {
     // In a real application, you would get the vendor ID from the authenticated user
-    const vendorId = req.user?.vendorId; // Assuming your auth middleware adds vendorId
+    const vendor_id = req.user?.vendor_id; // Assuming your auth middleware adds vendor_id
 
-    if (!vendorId) {
+    if (!vendor_id) {
       return res.status(401).json({ message: 'Vendor not authenticated' });
     }
 
@@ -17,7 +17,7 @@ export const addBranch = async (req: CustomRequest, res: Response) => {
     const newBranch = new Branch({
       name,
       address,
-      vendor: vendorId,
+      vendor: vendor_id,
     });
 
     const branch = await newBranch.save();
@@ -31,13 +31,13 @@ export const addBranch = async (req: CustomRequest, res: Response) => {
 export const getBranches = async (req: CustomRequest, res: Response) => {
   try {
     // In a real application, you would get the vendor ID from the authenticated user
-    const vendorId = req.user?.vendorId; // Assuming your auth middleware adds vendorId
+    const vendor_id = req.user?.vendor_id; // Assuming your auth middleware adds vendor_id
 
-    if (!vendorId) {
+    if (!vendor_id) {
       return res.status(401).json({ message: 'Vendor not authenticated' });
     }
 
-    const branches = await Branch.find({ vendor: vendorId });
+    const branches = await Branch.find({ vendor: vendor_id });
     res.json(branches);
   } catch (error: any) {
     res.status(500).json({ message: error.message });

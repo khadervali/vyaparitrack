@@ -11,7 +11,7 @@ const PurchaseOrderItemSchema = new mongoose.Schema({
     required: true,
     min: 1,
   },
-  unitPrice: {
+  unit_price: {
     type: Number,
     required: true,
     min: 0,
