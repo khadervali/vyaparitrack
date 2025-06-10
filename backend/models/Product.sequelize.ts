@@ -52,12 +52,12 @@ Product.init({
   },
   createdAt: {
     type: DataTypes.DATE,
- field: 'createdAt', // Explicitly map to the database column name
+    field: 'createdAt', // Explicitly map to the database column name
     allowNull: false,
   },
   updatedAt: {
     type: DataTypes.DATE,
- field: 'updatedAt', // Explicitly map to the database column name
+    field: 'updatedAt', // Explicitly map to the database column name
     allowNull: false,
   },
 }, {
