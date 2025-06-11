@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { apiUrl } from '@/lib/api';
+import api from '@/lib/api';
 
 const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) => {
   const [formData, setFormData] = useState({
@@ -63,16 +63,9 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
         // We are not updating quantity or branchId directly via product update
       };
       
-      const response = await fetch(apiUrl(`api/products/${productToEdit._id}`), {
-        method: 'PUT', // or 'PATCH'
-        headers: {
-          'Content-Type': 'application/json',
-          // Add authorization header if needed
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(dataToSend),
-      });
-
+      const response = await api.put(`/api/products/${productToEdit._id}`, dataToSend);
+      
+      // Handle successful response (status code 2xx)
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to update product');
@@ -91,6 +84,7 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
         description: error.message,
         variant: 'destructive',
       });
+      console.error('Error updating product:', error); // Log the error for debugging
     } finally {
       setIsLoading(false);
     }

@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { UserPlus, Eye, EyeOff } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select } from "@/components/ui/select";
-import { apiUrl } from '@/lib/api';
+import api from '@/lib/api';
 
 const SignupPage = () => {
   const [fullName, setFullName] = useState('');
@@ -33,8 +33,8 @@ const SignupPage = () => {
     console.log('useEffect is running');
     const fetchRoles = async () => {
 
-        console.log('fetchRoles is being called'); // Add this line
         try {
+          console.log('Fetching roles from API...');
           const response = await fetch(apiUrl('api/auth/roles')); // Adjust URL as needed
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -88,12 +88,8 @@ const SignupPage = () => {
         role
       });
       
-      const response = await fetch(apiUrl('api/auth/signup'), {
+      const response = await api.post('/auth/signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
           username: fullName,
           email: email,
           password: password,
@@ -101,7 +97,7 @@ const SignupPage = () => {
         }),
       });
 
-      const data = await response.json();
+      const data = response.data;
 
       if (response.ok) {
         toast({ title: "Account Created", description: data.message || "Your VyapariTrack account has been successfully created." });

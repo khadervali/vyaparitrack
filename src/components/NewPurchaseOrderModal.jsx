@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { PlusCircle } from 'lucide-react';
 import { apiUrl } from '@/lib/api';
+import api from '@/lib/api';
 
 const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated, products }) => {
   const [formData, setFormData] = useState({
@@ -40,10 +41,7 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated, produc
 
     setIsLoading(true);
     try {
-      const response = await fetch(apiUrl('api/purchaseorders'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      const response = await api.post('/purchaseorders', formData);
       });
 
         if (!response.ok) {

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { apiUrl } from '@/lib/api';
+import api from '@/lib/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -31,12 +32,8 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await fetch(apiUrl('api/auth/login'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+      const response = await api.post('/auth/login', {
+
         body: JSON.stringify({ email, password }),
       });
 

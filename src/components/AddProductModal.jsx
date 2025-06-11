@@ -13,7 +13,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { useToast } from '@/components/ui/use-toast';
-import { apiUrl } from '@/lib/api';
+import api from '@/lib/api';
 
 
 const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
@@ -32,13 +32,8 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(apiUrl('api/products'), {
+      const response = await api.post('/products', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
           name,
           description,
           price: parseFloat(price),
@@ -46,12 +41,10 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
           branchId,
           type: itemType, // Add item type
         }),
-      });
-
-      const data = await response.json();
+      
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to add product');
+        throw new Error(response.data.message || 'Failed to add product');
       }
 
       toast({ title: "Success", description: "Product added successfully." });

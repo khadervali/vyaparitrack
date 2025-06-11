@@ -17,8 +17,7 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
-import { apiUrl } from '@/lib/api';
+import { useToast } from '@/components/ui/use-toast';import api from '@/lib/api';
 
 
 const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) => {
@@ -43,7 +42,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
     const fetchBranches = async () => {
       try {
         // Replace with your actual API endpoint for fetching branches
-        const response = await fetch(apiUrl('api/branches'));
+        const response = await api.get('/api/branches');
         if (!response.ok) {
           throw new Error('Failed to fetch branches');
         }
@@ -77,14 +76,8 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
     const endpoint = adjustmentType === 'stock-in' ? '/api/inventory/stock-in' : '/api/inventory/stock-out';
 
     try {
-      const response = await fetch(apiUrl(endpoint), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productId: selectedProduct,
-          branchId: selectedBranch,
+      const response = await api.post(endpoint, {
+ productId: selectedProduct, branchId: selectedBranch,
           quantity: parseInt(quantity, 10), // Ensure quantity is a number
         }),
       });
