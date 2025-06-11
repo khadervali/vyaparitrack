@@ -89,14 +89,11 @@ const SignupPage = () => {
       });
       
       const response = await api.post('/auth/signup', {
-        method: 'POST',
           username: fullName,
           email: email,
           password: password,
           role: role,
-        }),
-      });
-
+        });
       const data = response.data;
 
       if (response.ok) {

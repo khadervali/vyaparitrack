@@ -79,8 +79,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
       const response = await api.post(endpoint, {
  productId: selectedProduct, branchId: selectedBranch,
           quantity: parseInt(quantity, 10), // Ensure quantity is a number
-        }),
-      });
+        });
 
       const data = await response.json();
 

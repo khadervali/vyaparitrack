@@ -8,8 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { apiUrl } from '@/lib/api';
-
 import StockAdjustmentModal from '@/components/StockAdjustmentModal';
 import AddProductModal from '@/components/AddProductModal';
 import EditProductModal from '@/components/EditProductModal';
@@ -49,13 +47,9 @@ const InventoryPage = () => {
       if (searchTerm) queryParams.append('searchTerm', searchTerm);
       // Assuming 'filters' is an object like { category: 'Electronics', type: 'product' }
       // Object.keys(filters).forEach(key => queryParams.append(key, filters[key])); // Uncomment and adjust as needed for filters
-      const token = localStorage.getItem('token'); // Fix: define token before using
-      const response = await fetch(apiUrl(`api/products?${queryParams.toString()}`), {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
+     
+      const response = await api.get(`/products?${queryParams.toString()}`);
+      if (response.status !== 200) {
         throw new Error('Failed to fetch products');
       }
       const data = await response.json();
@@ -83,14 +77,8 @@ const InventoryPage = () => {
   const handleSaveProduct = async () => {
     try {
       console.log('Saving product:', newProduct); // Log data being sent
-      const response = await fetch(apiUrl('api/products'), { // Corrected API endpoint
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProduct),
-      });
-      if (!response.ok) { // Check for non-OK status codes
+      const response = await api.post('/products', newProduct); // Corrected API endpoint
+      if (response.status !== 201) { // Check for non-OK status codes (201 Created is typical for POST)
         throw new Error('Failed to save product');
       }
       const addedProduct = await response.json();

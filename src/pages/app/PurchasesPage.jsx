@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { apiUrl } from '@/lib/api';
+import api from '@/lib/api'; // Correct import
 
 const PurchasesPage = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -19,13 +19,18 @@ const PurchasesPage = () => {
     const fetchPurchaseOrders = async () => {
       setLoading(true);
       try {
-        const response = await fetch(apiUrl('api/purchaseorders')); // Replace with your actual API endpoint
-        if (!response.ok) {
-          throw new Error('Failed to fetch purchase orders');
-        }
+        // Use the api instance from "@/lib/api" which is an axios instance
+        const response = await api.get('/purchaseorders'); // Use the api instance
+        
+        // axios automatically parses JSON, data is in response.data
         const data = await response.json();
         setPurchaseOrders(data);
       } catch (error) {
+        // Handle errors, e.g., network issues, server errors
+        // error.message provides a basic error description
+        // In a real application, you might inspect error.response for specific HTTP status codes
+        console.error('Error fetching purchase orders:', error);
+        
         console.error('Error fetching purchase orders:', error);
         toast({
           title: "Error",
@@ -34,6 +39,7 @@ const PurchasesPage = () => {
         });
       } finally {
         setLoading(false);
+        console.log("Fetch operation finished"); // Optional: for debugging
       }
     };
     fetchPurchaseOrders();
@@ -137,16 +143,11 @@ const PurchasesPage = () => {
       onPurchaseOrderCreated={() => {
         // Fetch purchase orders again when a new one is created
         setLoading(true);
-        fetch(apiUrl('api/purchaseorders'))
-          .then(response => {
-            if (!response.ok) throw new Error('Failed to fetch purchase orders');
-            return response.json();
-          })
-          .then(data => {
-            setPurchaseOrders(data);
-            setLoading(false);
-          })
-          .catch(error => {
+        const fetchUpdatedPurchaseOrders = async () => {
+          try {
+            const response = await api.get('/purchaseorders');
+            setPurchaseOrders(response.data); // Assuming response.data contains the array
+          } catch (error) { // Use error instead of catch error
             console.error('Error fetching purchase orders:', error);
             toast({
               title: "Error",
@@ -154,7 +155,11 @@ const PurchasesPage = () => {
               variant: "destructive",
             });
             setLoading(false);
-          });
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchUpdatedPurchaseOrders();
       }}
     />
     </>

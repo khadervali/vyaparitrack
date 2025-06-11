@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
-import { apiUrl } from '@/lib/api';
 import api from '@/lib/api';
 
 const LoginPage = () => {
@@ -32,11 +31,8 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await api.post('/auth/login', {
-
-        body: JSON.stringify({ email, password }),
-      });
-
+      // Use the imported api instance for the POST request
+      const response = await api.post('/auth/login', { email, password });
       const data = await response.json();
 
       if (!response.ok) {

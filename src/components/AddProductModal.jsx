@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+SelectItem,
+SelectTrigger,
+SelectValue,
+} from '@/components/ui/select';
 
 import { useToast } from '@/components/ui/use-toast';
 import api from '@/lib/api';
@@ -21,10 +28,60 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [branchId, setBranchId] = useState(''); // Assuming a way to select branch
+  const [sku, setSku] = useState('');
+  const [category, setCategory] = useState('');
+  const [unit, setUnit] = useState('');
+  const [vendorId, setVendorId] = useState('');
+  const [branchId, setBranchId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [itemType, setItemType] = useState('product'); // 'product' or 'service'
+  const [vendors, setVendors] = useState([]);
+  const [branches, setBranches] = useState([]);
   const { toast } = useToast();
+
+  // Fetch vendors and branches on modal open
+  useEffect(() => {
+    if (isOpen) {
+      const fetchVendorsAndBranches = async () => {
+        try {
+          // Fetch Vendors
+          const vendorsResponse = await api.get('/vendors'); // Adjust endpoint as needed
+          if (vendorsResponse.status !== 200) {
+            throw new Error('Failed to fetch vendors');
+          }
+          setVendors(vendorsResponse.data);
+
+          // Fetch Branches
+          const branchesResponse = await api.get('/branches'); // Adjust endpoint as needed
+          if (branchesResponse.status !== 200) {
+            throw new Error('Failed to fetch branches');
+          }
+          setBranches(branchesResponse.data);
+
+        } catch (error) {
+          console.error('Error fetching vendors or branches:', error);
+          toast({
+            title: "Error",
+            description: error.message || "Failed to load vendors or branches.",
+            variant: "destructive",
+          });
+        }
+      };
+      fetchVendorsAndBranches();
+    } else {
+      // Reset form fields and data when closing
+      setName('');
+      setDescription('');
+      setPrice('');
+      setQuantity('');
+      setSku('');
+      setCategory('');
+      setUnit('');
+      setVendorId('');
+      setBranchId('');
+      setItemType('product');
+    }
+  }, [isOpen, toast]);
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
@@ -32,25 +89,19 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
 
     try {
       const token = localStorage.getItem('token');
+      // Remove redundant method: 'POST'
       const response = await api.post('/products', {
-        method: 'POST',
           name,
           description,
           price: parseFloat(price),
           quantity: itemType === 'product' ? parseInt(quantity, 10) : undefined, // Include quantity only for products
+          sku: itemType === 'product' ? sku : undefined, // Include SKU only for products
+          category,
+          unit: itemType === 'product' ? unit : undefined, // Include unit only for products
+          vendorId,
           branchId,
           type: itemType, // Add item type
-        }),
-      
-
-      if (!response.ok) {
-        throw new Error(response.data.message || 'Failed to add product');
-      }
-
-      toast({ title: "Success", description: "Product added successfully." });
-      onProductAdded(); // Call the function to refresh the list
-      setIsLoading(false);
-      onClose();
+      });
       // Clear form fields
       setName('');
       setDescription('');
@@ -58,6 +109,14 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
       setQuantity('');
       setItemType('product'); // Reset type
       setBranchId('');
+      setSku('');
+      setCategory('');
+      setUnit('');
+      setVendorId('');
+
+      toast({ title: "Success", description: "Item added successfully." });
+      onProductAdded(); // Call the function to refresh the list
+      onClose();
     } catch (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       setIsLoading(false);

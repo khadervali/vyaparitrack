@@ -4,9 +4,11 @@ export interface IProduct extends Document {
   name: string;
   description?: string;
   price: number;
-  quantity: number;
+  sku: string; // Added SKU field
+  category?: string; // Added Category field
+  unitOfMeasurement?: string; // Added Unit of Measurement field
   type: 'product' | 'service'; // Added type field
-  stockQuantity?: number; // Added stockQuantity field, made optional
+  initialStock?: number; // Renamed and made optional
   minStockQuantity: number; // Added minStockQuantity field
   vendor: mongoose.Types.ObjectId;
 }
@@ -26,11 +28,22 @@ const productSchema: Schema = new mongoose.Schema({
     required: true,
     min: 0,
   },
-  quantity: { // Keeping quantity for now, could be consolidated or repurposed
+  sku: { // Added SKU field
     type: Number,
     required: true,
-    min: 0,
-    default: 0,
+    unique: true,
+    trim: true,
+  },
+  category: { // Added Category field
+    type: String,
+    trim: true,
+  },
+  unitOfMeasurement: { // Added Unit of Measurement field
+    type: String,
+    trim: true,
+  },
+  initialStock: { // Renamed and made optional
+    type: Number,
   },
   type: { // Added type field
     type: String,
@@ -38,12 +51,6 @@ const productSchema: Schema = new mongoose.Schema({
     enum: ['product', 'service'],
   },
   stock_quantity: { // Added stock_quantity field
-    type: Number,
-    required: false, // Made optional
-    min: 0,
-    default: 0, // Initialized to 0
-  },
-  min_stock_quantity: { // Added min_stock_quantity field
     type: Number,
     required: true,
     default: 10, // Default value set to 10

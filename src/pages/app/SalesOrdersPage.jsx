@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { apiUrl } from '@/lib/api';
+import api from '@/lib/api';
 
 const SalesOrdersPage = () => {
   const [salesOrders, setSalesOrders] = useState([]);
@@ -18,8 +18,8 @@ const SalesOrdersPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(apiUrl('api/salesorders')); // Fetch sales orders from the backend
-        if (!response.ok) {
+        const response = await api.get('/api/salesorders'); // Fetch sales orders from the backend
+        if (response.status !== 200) {
           throw new Error('Failed to fetch sales orders');
         }
         const data = await response.json();

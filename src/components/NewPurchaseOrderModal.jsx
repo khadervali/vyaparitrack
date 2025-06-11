@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { PlusCircle } from 'lucide-react';
-import { apiUrl } from '@/lib/api';
 import api from '@/lib/api';
 
 const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated, products }) => {
@@ -41,11 +40,10 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated, produc
 
     setIsLoading(true);
     try {
-      const response = await api.post('/purchaseorders', formData);
-      });
+      const response = await api.post('/purchaseorders', formData);;
 
         if (!response.ok) {
-          throw new Error('Failed to create purchase order');
+ throw new Error(response.statusText || 'Failed to create purchase order');
         }
       const result = await response.json();
       toast({ title: 'Success', description: 'Purchase Order created successfully.', variant: 'success' }); // Use success variant
@@ -72,9 +70,7 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated, produc
       });
       return;
     }
-    if (editingItemIndex !== null) {
-      const updatedItems = formData.items.map((item, index) => index === editingItemIndex ? { ...newItem } : item);
-    }
+    // Logic for editing item would go here if needed
     setFormData({
       ...formData,
       items: [...formData.items, { ...newItem }],
@@ -135,7 +131,7 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated, produc
                   <div key={index} className="flex justify-between items-center border-b pb-2 mb-2 last:border-b-0 last:pb-0">
                     <div className="text-sm">
                       <p className="font-medium">{getProductName(item.product)}</p>
-                      <p className="text-muted-foreground">Qty: {item.quantity} | Unit Price: ₹{item.unitPrice.toFixed(2)}</p>
+                      <p className="text-muted-foreground">Qty: {item.quantity} | Unit Price: {item.unitPrice !== undefined && item.unitPrice !== null ? `₹${item.unitPrice.toFixed(2)}` : 'N/A'}</p>
                       <p className="font-semibold">Subtotal: ₹{(item.quantity * item.unitPrice).toFixed(2)}</p>
                     </div>
                     <div className="flex gap-2">
@@ -173,7 +169,7 @@ const NewPurchaseOrderModal = ({ isOpen, onClose, onPurchaseOrderCreated, produc
                  </div>
                   <div>
                     <Label htmlFor="unitPrice">Unit Price</Label>
-                    <Input id="unitPrice" type="number" value={newItem.unitPrice} onChange={(e) => setNewItem({ ...newItem, unitPrice: Number(e.target.value) })} />
+                    <Input id="unitPrice" type="number" value={newItem.unitPrice} onChange={(e) => setNewItem({ ...newItem, unitPrice: Number(e.target.value) })} step="0.01" />
                   </div>
               </div>
                <div className="flex justify-end">
