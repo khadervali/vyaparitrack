@@ -35,15 +35,14 @@ const SignupPage = () => {
 
         try {
           console.log('Fetching roles from API...');
-          const response = await fetch(apiUrl('api/auth/roles')); // Adjust URL as needed
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          const response = await api.get('/auth/roles'); // Use the api instance
+          if (response.status < 200 || response.status >= 300) {
+             // Handle non-2xx status codes if needed, though axios usually throws for 4xx/5xx
+             throw new Error(`HTTP error! status: ${response.status}`);
           }
           const data = await response.json();
           setRoles(data);
         } catch (error) {
-          console.error('Error fetching roles: status', response.status);
-          console.error('Error fetching roles: response body', await response.text());
           console.error('Error fetching roles:', error);
           // Optionally show a toast or error message to the user
           toast({
