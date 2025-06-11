@@ -4,24 +4,52 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import {
-  LayoutDashboard, Package, IndianRupee, ShoppingCart, BarChart3, FileText, Settings, UserCircle, LogOut, Menu, X, Sun, Moon, Bell, ChevronDown, ShoppingBag
+  LayoutDashboard, Package, IndianRupee, ShoppingCart, BarChart3, FileText, 
+  Settings, UserCircle, LogOut, Menu, X, Sun, Moon, Bell, ChevronDown, 
+  ShoppingBag, Sparkles
 } from 'lucide-react';
 
 const SidebarLink = ({ to, icon, text, currentPath, setIsMobileMenuOpen }) => {
   const isActive = currentPath === to || (currentPath.startsWith(to) && to !== "/app/dashboard" && to !== "/app");
   return (
-    <Link
-      to={to}
-      onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(false)}
-      className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200
-        ${isActive 
-          ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary' 
-          : 'text-foreground/70 hover:bg-accent hover:text-foreground dark:hover:bg-accent/10 dark:hover:text-foreground/90'
-        }`}
+    <motion.div
+      whileHover={{ x: 5 }}
+      whileTap={{ scale: 0.98 }}
     >
-      {React.cloneElement(icon, { className: `w-5 h-5 mr-3 flex-shrink-0 ${isActive ? 'text-primary' : ''}` })}
-      <span className="truncate">{text}</span>
-    </Link>
+      <Link
+        to={to}
+        onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(false)}
+        className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
+          ${isActive 
+            ? 'bg-primary/15 text-primary dark:bg-primary/20 dark:text-primary backdrop-blur-sm shadow-sm' 
+            : 'text-foreground/70 hover:bg-accent/50 hover:text-foreground dark:hover:bg-accent/20 dark:hover:text-foreground/90'
+          }`}
+      >
+        <div className="relative">
+          {React.cloneElement(icon, { className: `w-5 h-5 mr-3 flex-shrink-0 ${isActive ? 'text-primary' : ''}` })}
+          {isActive && (
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              style={{ 
+                background: 'radial-gradient(circle, rgba(59,130,246,0.3) 0%, rgba(59,130,246,0) 70%)',
+                transform: 'scale(1.6)'
+              }}
+            />
+          )}
+        </div>
+        <span className="truncate">{text}</span>
+        {isActive && (
+          <motion.div
+            className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+          />
+        )}
+      </Link>
+    </motion.div>
   );
 };
 
@@ -107,7 +135,7 @@ const AppLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background dark:from-background dark:via-primary/5 dark:to-background">
+    <div className="min-h-screen bg-mesh">
       <div className="flex h-full">
         {/* Mobile sidebar overlay */}
         {isMobileMenuOpen && (
@@ -119,14 +147,24 @@ const AppLayout = () => {
 
         {/* Sidebar */}
         <aside
-          className={`fixed lg:static top-0 left-0 z-50 h-full w-64 bg-card/80 dark:bg-card/40 border-r backdrop-blur-md transform transition-transform duration-200 ease-in-out lg:translate-x-0 flex-shrink-0 ${
+          className={`fixed lg:static top-0 left-0 z-50 h-full w-64 sidebar-glassmorphism transform transition-transform duration-200 ease-in-out lg:translate-x-0 flex-shrink-0 ${
             isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <div className="sticky top-0 h-16 flex items-center px-4 border-b bg-card/60 dark:bg-card/40 backdrop-blur-md z-20">
+          <div className="sticky top-0 h-16 flex items-center px-4 border-b border-border/30 navbar-glassmorphism z-20">
             <Link to="/app/dashboard" className="flex items-center space-x-2">
-              <ShoppingBag className="h-6 w-6 text-primary" />
-              <span className="font-bold text-lg">VyapariTrack</span>
+              <div className="relative">
+                <ShoppingBag className="h-6 w-6 text-primary" />
+                <motion.div 
+                  className="absolute -top-1 -right-1"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                >
+                  <Sparkles className="h-3 w-3 text-yellow-400" />
+                </motion.div>
+              </div>
+              <span className="font-bold text-lg gradient-text">VyapariTrack</span>
             </Link>
           </div>
           <nav className="p-4 space-y-1 h-[calc(100vh-4rem)] overflow-y-auto">
@@ -144,24 +182,50 @@ const AppLayout = () => {
         {/* Main content area */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Top navigation bar */}
-          <header className="sticky top-0 h-16 flex items-center justify-between px-4 border-b bg-card/60 dark:bg-card/40 backdrop-blur-md z-20">
+          <header className="sticky top-0 h-16 flex items-center justify-between px-4 border-b border-border/30 navbar-glassmorphism z-20">
             <div className="flex items-center">
-              <button
+              <motion.button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-md lg:hidden hover:bg-accent"
+                className="p-2 rounded-md lg:hidden hover:bg-accent/50"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <Menu className="h-5 w-5" />
-              </button>
+              </motion.button>
             </div>
 
             <div className="flex items-center space-x-4 ml-auto">
-              <button
+              <motion.button
                 onClick={toggleTheme}
-                className="p-2 rounded-full hover:bg-accent"
-                aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+                className="p-2 rounded-full hover:bg-accent/50 transition-colors relative overflow-hidden"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label={darkMode ? "Switch to light theme" : "Switch to dark mode"}
               >
-                {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </button>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ duration: 0.3 }}
+                  key={darkMode ? "sun" : "moon"}
+                  className="relative z-10"
+                >
+                  {darkMode ? (
+                    <Sun className="h-5 w-5 text-yellow-400" />
+                  ) : (
+                    <Moon className="h-5 w-5 text-foreground/70" />
+                  )}
+                </motion.div>
+                <motion.div 
+                  className="absolute inset-0 rounded-full"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: darkMode ? 0.15 : 0 }}
+                  transition={{ duration: 0.5 }}
+                  style={{ 
+                    background: 'radial-gradient(circle, rgba(250,204,21,0.7) 0%, rgba(250,204,21,0) 70%)'
+                  }}
+                />
+              </motion.button>
               
               <div className="relative">
                 <button
@@ -204,9 +268,19 @@ const AppLayout = () => {
           </header>
 
           {/* Main content */}
-          <main className="flex-1 overflow-auto p-6 bg-background/50 dark:bg-background/40">
+          <main className="flex-1 overflow-auto p-6">
             <div className="container mx-auto max-w-7xl">
-              <Outlet />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Outlet />
+                </motion.div>
+              </AnimatePresence>
             </div>
           </main>
         </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Menu, X, ShoppingBag, Sun, Moon, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, ShoppingBag, Sun, Moon, LogOut, LayoutDashboard, Sparkles } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const Navbar = () => {
@@ -57,11 +57,21 @@ const Navbar = () => {
   const isAnchorLink = (path) => path.includes('/#');
 
   return (
-    <nav className="sticky top-0 z-50 py-3 shadow-md glassmorphism">
+    <nav className="sticky top-0 z-50 py-3 navbar-glassmorphism">
       <div className="container mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center space-x-2">
-          <ShoppingBag className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400 dark:to-blue-300">
+          <div className="relative">
+            <ShoppingBag className="h-8 w-8 text-primary" />
+            <motion.div 
+              className="absolute -top-1 -right-1"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, duration: 0.3 }}
+            >
+              <Sparkles className="h-4 w-4 text-yellow-400" />
+            </motion.div>
+          </div>
+          <span className="text-2xl font-bold gradient-text">
             VyapariTrack
           </span>
         </Link>
@@ -72,8 +82,10 @@ const Navbar = () => {
               {isAnchorLink(item.path) ? (
                 <a
                   href={item.path}
-                  className={`text-foreground/80 hover:text-primary transition-colors duration-300 font-medium ${
-                    location.pathname + location.hash === item.path ? 'text-primary font-semibold' : ''
+                  className={`text-foreground/80 hover:text-primary transition-colors duration-300 font-medium focus-ring ${
+                    location.pathname + location.hash === item.path 
+                      ? 'text-primary font-semibold after:content-[""] after:block after:h-0.5 after:bg-primary after:mt-0.5 after:scale-x-100 after:transition-transform' 
+                      : 'after:content-[""] after:block after:h-0.5 after:bg-primary after:mt-0.5 after:scale-x-0 after:transition-transform hover:after:scale-x-100'
                   }`}
                 >
                   {item.name}
@@ -81,8 +93,10 @@ const Navbar = () => {
               ) : (
                 <Link
                   to={item.path}
-                  className={`text-foreground/80 hover:text-primary transition-colors duration-300 font-medium ${
-                    location.pathname === item.path ? 'text-primary font-semibold' : ''
+                  className={`text-foreground/80 hover:text-primary transition-colors duration-300 font-medium focus-ring ${
+                    location.pathname === item.path 
+                      ? 'text-primary font-semibold after:content-[""] after:block after:h-0.5 after:bg-primary after:mt-0.5 after:scale-x-100 after:transition-transform' 
+                      : 'after:content-[""] after:block after:h-0.5 after:bg-primary after:mt-0.5 after:scale-x-0 after:transition-transform hover:after:scale-x-100'
                   }`}
                 >
                   {item.name}
@@ -114,12 +128,34 @@ const Navbar = () => {
           )}
           <motion.button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-accent transition-colors"
+            className="p-2 rounded-full hover:bg-accent/50 transition-colors relative overflow-hidden"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             aria-label={darkMode ? "Switch to light theme" : "Switch to dark theme"}
           >
-            {darkMode ? <Sun className="h-5 w-5 text-yellow-400" /> : <Moon className="h-5 w-5 text-foreground/70" />}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+              transition={{ duration: 0.3 }}
+              key={darkMode ? "sun" : "moon"}
+              className="relative z-10"
+            >
+              {darkMode ? (
+                <Sun className="h-5 w-5 text-yellow-400" />
+              ) : (
+                <Moon className="h-5 w-5 text-foreground/70" />
+              )}
+            </motion.div>
+            <motion.div 
+              className="absolute inset-0 rounded-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: darkMode ? 0.15 : 0 }}
+              transition={{ duration: 0.5 }}
+              style={{ 
+                background: 'radial-gradient(circle, rgba(250,204,21,0.7) 0%, rgba(250,204,21,0) 70%)'
+              }}
+            />
           </motion.button>
         </div>
 

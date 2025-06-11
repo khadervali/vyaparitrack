@@ -1,0 +1,73 @@
+/* Glassmorphism effects for light and dark mode */
+
+.glassmorphism {
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+/* Light mode glassmorphism - blue theme */
+:root:not(.dark) .glassmorphism {
+  background-color: rgba(239, 246, 255, 0.7);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Dark mode glassmorphism - purple/black theme */
+.dark .glassmorphism {
+  background-color: rgba(17, 24, 39, 0.6);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+/* Hover effects */
+.glassmorphism-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* Card glassmorphism */
+.card-glassmorphism {
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+:root:not(.dark) .card-glassmorphism {
+  background-color: rgba(239, 246, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.dark .card-glassmorphism {
+  background-color: rgba(17, 24, 39, 0.6);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+/* Navbar glassmorphism */
+.navbar-glassmorphism {
+  backdrop-filter: blur(12px);
+}
+
+:root:not(.dark) .navbar-glassmorphism {
+  background-color: rgba(239, 246, 255, 0.85);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+}
+
+.dark .navbar-glassmorphism {
+  background-color: rgba(17, 24, 39, 0.75);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+}
+
+/* Sidebar glassmorphism */
+.sidebar-glassmorphism {
+  backdrop-filter: blur(12px);
+}
+
+:root:not(.dark) .sidebar-glassmorphism {
+  background-color: rgba(239, 246, 255, 0.8);
+  border-right: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.dark .sidebar-glassmorphism {
+  background-color: rgba(17, 24, 39, 0.7);
+  border-right: 1px solid rgba(139, 92, 246, 0.15);
+}

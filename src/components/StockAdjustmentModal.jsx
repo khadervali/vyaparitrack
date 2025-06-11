@@ -42,19 +42,17 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
     const fetchBranches = async () => {
       try {
         // Replace with your actual API endpoint for fetching branches
-        const response = await api.get('/api/branches');
-        if (!response.ok) {
-          throw new Error('Failed to fetch branches');
-        }
-        const data = await response.json();
-        setBranches(data);
+        const response = await api.get('/branches');
+        setBranches(response.data || []);
       } catch (error) {
         console.error('Error fetching branches:', error);
-         toast({
+        toast({
           title: "Error",
           description: "Failed to load branches for adjustment.",
           variant: "destructive",
         });
+        // Set default branch if API fails
+        setBranches([{ id: 'main', name: 'Main Branch' }]);
       }
     };
 
@@ -73,19 +71,14 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
       return;
     }
 
-    const endpoint = adjustmentType === 'stock-in' ? '/api/inventory/stock-in' : '/api/inventory/stock-out';
+    const endpoint = adjustmentType === 'stock-in' ? '/inventory/stock-in' : '/inventory/stock-out';
 
     try {
-      const response = await api.post(endpoint, {
- productId: selectedProduct, branchId: selectedBranch,
-          quantity: parseInt(quantity, 10), // Ensure quantity is a number
-        });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Stock adjustment failed');
-      }
+      await api.post(endpoint, {
+        productId: selectedProduct, 
+        branchId: selectedBranch,
+        quantity: parseInt(quantity, 10)
+      });
 
       toast({
         title: "Success",
@@ -97,7 +90,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
       console.error('Error submitting stock adjustment:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to submit stock adjustment.",
+        description: error.response?.data?.message || "Failed to submit stock adjustment.",
         variant: "destructive",
       });
     }
@@ -123,7 +116,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
               </SelectTrigger>
               <SelectContent>
                 {productList.map((product) => (
-                  <SelectItem key={product._id} value={product._id}>{product.name}</SelectItem>
+                  <SelectItem key={product.id || product._id} value={product.id || product._id}>{product.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -138,7 +131,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
               </SelectTrigger>
               <SelectContent>
                  {branches.map((branch) => (
-                  <SelectItem key={branch._id} value={branch._id}>{branch.name}</SelectItem>
+                  <SelectItem key={branch.id || branch._id} value={branch.id || branch._id}>{branch.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

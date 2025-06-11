@@ -5,7 +5,6 @@ import sequelize from './config/database';
 import authRoutes from './routes/authRoutes';
 import inventoryRoutes from './routes/inventoryRoutes';
 import productRoutes from './routes/productRoutes';
-import { protect } from './middleware/authMiddleware'; // Import the protect middleware
 import branchRoutes from './routes/branchRoutes';
 
 dotenv.config({ path: './.env' });
@@ -22,19 +21,12 @@ if (!process.env.JWT_SECRET) {
 app.use(express.json());
 
 // CORS middleware configuration
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  credentials: true
+}));
 
 // Basic route
 app.get('/', (req, res) => {
@@ -47,7 +39,9 @@ app.use('/api/auth', (req, res, next) => {
   console.log('Auth route accessed:', req.method, req.path, req.headers);
   next();
 }, authRoutes);
-app.use('/api/products', protect, productRoutes); // Add 'protect' here
+
+// Routes that require authentication
+app.use('/api/products', productRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/branches', branchRoutes);
 
@@ -59,7 +53,7 @@ const startServer = async () => {
     console.log('Database connection established successfully.');
 
     // Sync database models
-    await sequelize.sync({ force: false }); // This will create the tables. Set back to false after first run
+    await sequelize.sync({ force: false }); // This will create the tables. Set to false after first run
     console.log('Database tables created successfully.');
 
     // Start server

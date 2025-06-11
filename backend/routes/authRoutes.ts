@@ -1,14 +1,15 @@
-import express from 'express';
-const router = express.Router();
+import express, { Router } from 'express';
 import { signupUser, loginUser, getRoles } from '../controllers/authController';
 
-// POST /api/auth/signup
+const router: Router = express.Router();
+
+// GET /api/auth/roles - Get all roles
+router.get('/roles', getRoles);
+
+// POST /api/auth/signup - Register a new user
 router.post('/signup', signupUser);
 
-// POST /api/auth/login
+// POST /api/auth/login - Authenticate user & get token
 router.post('/login', loginUser);
-
-// GET /api/auth/roles
-router.get('/roles', getRoles);
 
 export default router;

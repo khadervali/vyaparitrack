@@ -4,13 +4,18 @@ export interface IProduct extends Document {
   name: string;
   description?: string;
   price: number;
-  sku: string; // Added SKU field
-  category?: string; // Added Category field
-  unitOfMeasurement?: string; // Added Unit of Measurement field
-  type: 'product' | 'service'; // Added type field
-  initialStock?: number; // Renamed and made optional
-  minStockQuantity: number; // Added minStockQuantity field
+  sku: string;
+  hsn_sac?: string;
+  gst_rate?: number;
+  category?: string;
+  unitOfMeasurement?: string;
+  type: 'product' | 'service';
+  minStockQuantity?: number;
+  barcode?: string;
   vendor: mongoose.Types.ObjectId;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const productSchema: Schema = new mongoose.Schema({
@@ -28,42 +33,62 @@ const productSchema: Schema = new mongoose.Schema({
     required: true,
     min: 0,
   },
-  sku: { // Added SKU field
-    type: Number,
+  sku: {
+    type: String,
     required: true,
     unique: true,
     trim: true,
   },
-  category: { // Added Category field
+  hsn_sac: {
     type: String,
     trim: true,
+    comment: 'HSN code for products or SAC code for services'
   },
-  unitOfMeasurement: { // Added Unit of Measurement field
-    type: String,
-    trim: true,
-  },
-  initialStock: { // Renamed and made optional
+  gst_rate: {
     type: Number,
+    default: 18,
+    comment: 'GST percentage rate'
   },
-  type: { // Added type field
+  category: {
+    type: String,
+    trim: true,
+  },
+  unitOfMeasurement: {
+    type: String,
+    trim: true,
+    default: 'Pcs',
+  },
+  type: {
     type: String,
     required: true,
     enum: ['product', 'service'],
+    default: 'product'
   },
-  stock_quantity: { // Added stock_quantity field
+  minStockQuantity: {
     type: Number,
-    required: true,
-    default: 10, // Default value set to 10
+    default: 10,
+  },
+  barcode: {
+    type: String,
+    trim: true,
+    sparse: true,
   },
   vendor: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Assuming your User model is named 'User'
+    ref: 'User',
     required: true,
   },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 },
 {
   timestamps: true,
 });
+
+// Create compound index for vendor+sku to ensure SKU uniqueness per vendor
+productSchema.index({ vendor: 1, sku: 1 }, { unique: true });
 
 const Product = mongoose.model<IProduct>('Product', productSchema);
 

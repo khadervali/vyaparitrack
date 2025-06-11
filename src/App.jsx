@@ -1,122 +1,133 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
+import React, { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
-
-import LandingPage from '@/pages/LandingPage';
-import LoginPage from '@/pages/LoginPage';
-import SignupPage from '@/pages/SignupPage';
-import AboutPage from '@/pages/AboutPage';
-import TermsPage from '@/pages/TermsPage';
-import PrivacyPage from '@/pages/PrivacyPage';
-import FeaturesPage from '@/pages/FeaturesPage';
-import PricingPage from '@/pages/PricingPage';
-import ContactPage from '@/pages/ContactPage';
-import IntegrationsPage from '@/pages/IntegrationsPage';
-import UpdatesPage from '@/pages/UpdatesPage';
-import CareersPage from '@/pages/CareersPage';
-import BlogPage from '@/pages/BlogPage';
-import HelpPage from '@/pages/HelpPage';
-import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
-
 import AppLayout from '@/components/layout/AppLayout';
-import DashboardPage from '@/pages/DashboardPage';
-import InventoryPage from '@/pages/app/InventoryPage';
-import SalesPage from '@/pages/app/SalesPage';
-import PurchasesPage from '@/pages/app/PurchasesPage';
-import ReportsPage from '@/pages/app/ReportsPage';
-import GstToolsPage from '@/pages/app/GstToolsPage';
-import SettingsPage from '@/pages/app/SettingsPage';
-import UserProfilePage from '@/pages/app/UserProfilePage';
-
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
-function ScrollToTop() {
-  const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-  return null;
-}
+// Lazy loaded pages
+const LandingPage = lazy(() => import('@/pages/LandingPage'));
+const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const SignupPage = lazy(() => import('@/pages/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+const FeaturesPage = lazy(() => import('@/pages/FeaturesPage'));
+const PricingPage = lazy(() => import('@/pages/PricingPage'));
+const ContactPage = lazy(() => import('@/pages/ContactPage'));
+const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
+const TermsPage = lazy(() => import('@/pages/TermsPage'));
 
-function ProtectedRoute({ children }) {
+// App pages
+const InventoryPage = lazy(() => import('@/pages/app/InventoryPage'));
+const CategoriesPage = lazy(() => import('@/pages/app/inventory/CategoriesPage'));
+const LowStockPage = lazy(() => import('@/pages/app/inventory/LowStockPage'));
+const StockTransferPage = lazy(() => import('@/pages/app/inventory/StockTransferPage'));
+const SalesPage = lazy(() => import('@/pages/app/SalesPage'));
+const PurchasesPage = lazy(() => import('@/pages/app/PurchasesPage'));
+const ReportsPage = lazy(() => import('@/pages/app/ReportsPage'));
+const GstToolsPage = lazy(() => import('@/pages/app/GstToolsPage'));
+const SettingsPage = lazy(() => import('@/pages/app/SettingsPage'));
+const UserProfilePage = lazy(() => import('@/pages/app/UserProfilePage'));
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="text-center space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
+      <p className="text-lg text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
+
+// Auth guard component
+const ProtectedRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  const token = localStorage.getItem('token');
-
-  if (!isAuthenticated || !token) {
+  
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+  
   return children;
-}
-
-function PublicLayout() {
-  return (
-    <>
-      <Navbar />
-      <main className="flex-grow pt-4">
-        <Outlet />
-      </main>
-      <Footer />
-    </>
-  );
-}
+};
 
 function App() {
-  const [isAuthResolved, setIsAuthResolved] = useState(false);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('vyaparitrack-theme');
-    if (!savedTheme) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('vyaparitrack-theme', 'dark');
-    } else if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    setIsAuthResolved(true);
-  }, []);
-
-  if (!isAuthResolved) {
-    return <div className="flex items-center justify-center min-h-screen bg-background text-foreground">Loading...</div>;
-  }
-
   return (
     <Router>
-      <ScrollToTop />
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background dark:from-background dark:via-primary/5 dark:to-background">
+      <Suspense fallback={<LoadingFallback />}>
         <Routes>
-          {/* Public Routes */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/features" element={<FeaturesPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/integrations" element={<IntegrationsPage />} />
-            <Route path="/updates" element={<UpdatesPage />} />
-            <Route path="/careers" element={<CareersPage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/help" element={<HelpPage />} />
-          </Route>
-
-          {/* Protected App Routes */}
-          <Route
-            path="/app"
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
+          {/* Public routes with Navbar and Footer */}
+          <Route path="/" element={
+            <>
+              <Navbar />
+              <main className="min-h-[calc(100vh-64px-80px)]">
+                <LandingPage />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/features" element={
+            <>
+              <Navbar />
+              <main className="min-h-[calc(100vh-64px-80px)]">
+                <FeaturesPage />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/pricing" element={
+            <>
+              <Navbar />
+              <main className="min-h-[calc(100vh-64px-80px)]">
+                <PricingPage />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/contact" element={
+            <>
+              <Navbar />
+              <main className="min-h-[calc(100vh-64px-80px)]">
+                <ContactPage />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/privacy" element={
+            <>
+              <Navbar />
+              <main className="min-h-[calc(100vh-64px-80px)]">
+                <PrivacyPage />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/terms" element={
+            <>
+              <Navbar />
+              <main className="min-h-[calc(100vh-64px-80px)]">
+                <TermsPage />
+              </main>
+              <Footer />
+            </>
+          } />
+          
+          {/* Auth routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          
+          {/* Protected app routes */}
+          <Route path="/app" element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }>
             <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="inventory" element={<InventoryPage />} />
+            <Route path="inventory/categories" element={<CategoriesPage />} />
+            <Route path="inventory/low-stock" element={<LowStockPage />} />
+            <Route path="inventory/transfers" element={<StockTransferPage />} />
             <Route path="sales" element={<SalesPage />} />
             <Route path="purchases" element={<PurchasesPage />} />
             <Route path="reports" element={<ReportsPage />} />
@@ -124,11 +135,11 @@ function App() {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<UserProfilePage />} />
           </Route>
-
-          {/* Catch-all route - Redirect to landing page */}
+          
+          {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
+      </Suspense>
       <Toaster />
     </Router>
   );

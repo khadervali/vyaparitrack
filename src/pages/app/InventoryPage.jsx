@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Package, PlusCircle, Search, Filter, FileSpreadsheet, FileText as FileTextIcon } from 'lucide-react';
+import { 
+  Package, 
+  PlusCircle, 
+  Search, 
+  Filter, 
+  FileSpreadsheet, 
+  FileText as FileTextIcon,
+  AlertCircle
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-// Assuming you have Dialog and DialogTrigger components
-// import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import StockAdjustmentModal from '@/components/StockAdjustmentModal';
 import AddProductModal from '@/components/AddProductModal';
 import EditProductModal from '@/components/EditProductModal';
+import InventoryTabs from './InventoryTabs';
+import api from '@/lib/api';
 const InventoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
@@ -45,15 +52,10 @@ const InventoryPage = () => {
     try {
       const queryParams = new URLSearchParams();
       if (searchTerm) queryParams.append('searchTerm', searchTerm);
-      // Assuming 'filters' is an object like { category: 'Electronics', type: 'product' }
-      // Object.keys(filters).forEach(key => queryParams.append(key, filters[key])); // Uncomment and adjust as needed for filters
-     
+      
       const response = await api.get(`/products?${queryParams.toString()}`);
-      if (response.status !== 200) {
-        throw new Error('Failed to fetch products');
-      }
-      const data = await response.json();
-      setProducts(data);
+      // With axios, we don't need to check status or call .json()
+      setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
@@ -76,15 +78,12 @@ const InventoryPage = () => {
 
   const handleSaveProduct = async () => {
     try {
-      console.log('Saving product:', newProduct); // Log data being sent
-      const response = await api.post('/products', newProduct); // Corrected API endpoint
-      if (response.status !== 201) { // Check for non-OK status codes (201 Created is typical for POST)
-        throw new Error('Failed to save product');
-      }
-      const addedProduct = await response.json();
+      console.log('Saving product:', newProduct);
+      const response = await api.post('/products', newProduct);
+      // With axios, response.data already contains the parsed JSON
       toast({ title: 'Success', description: 'Product added successfully.' });
       setIsAddProductModalOpen(false);
-      setNewProduct({ // Reset form fields
+      setNewProduct({
         name: '',
         sku: '',
         category: '',
@@ -94,22 +93,27 @@ const InventoryPage = () => {
         hsnSac: '',
         taxRate: '',
       });
-      fetchProducts(); // Refresh the list
+      fetchProducts();
     } catch (error) {
       console.error('Error saving product:', error);
       toast({ title: 'Error', description: 'Failed to save product.', variant: 'destructive' });
     }
   };
 
-  // fetchProducts is used inside useEffect, and it depends on searchTerm.
-  // Therefore, both fetchProducts and searchTerm should be in the dependency array.
-  // explicitly can sometimes be necessary depending on ESLint rules or complex dependency trees.
+  // Combined useEffect to fetch both products and stats
   useEffect(() => {
-    // Use ref to prevent double fetch in strict mode or on subsequent renders
-    if (!isMounted.current) {
-      isMounted.current = true;
-    }
-    fetchProducts();
+    const fetchData = async () => {
+      if (!isMounted.current) {
+        isMounted.current = true;
+        await fetchProducts();
+        await fetchInventoryStats();
+      } else if (searchTerm) {
+        // Only refetch products when search term changes after initial load
+        await fetchProducts();
+      }
+    };
+    
+    fetchData();
   }, [searchTerm]);
 
   const handleCloseEditModal = () => {
@@ -123,6 +127,34 @@ const InventoryPage = () => {
   };
 
 
+  // Stats for inventory summary
+  const [inventoryStats, setInventoryStats] = useState({
+    totalProducts: 0,
+    totalServices: 0,
+    lowStockItems: 0,
+    outOfStockItems: 0
+  });
+
+  // Fetch inventory statistics
+  const fetchInventoryStats = async () => {
+    try {
+      const response = await api.get('/inventory/stats');
+      setInventoryStats(response.data);
+    } catch (error) {
+      console.error('Error fetching inventory stats:', error);
+      // Set default values if API fails
+      setInventoryStats({
+        totalProducts: products.filter(p => p.type !== 'service').length,
+        totalServices: products.filter(p => p.type === 'service').length,
+        lowStockItems: products.filter(p => p.type !== 'service' && p.initialStock > 0 && p.initialStock < 10).length,
+        outOfStockItems: products.filter(p => p.type !== 'service' && p.initialStock <= 0).length
+      });
+    }
+  };
+
+  // Remove duplicate useEffect that's causing multiple API calls
+  // We'll keep only one useEffect for both products and stats
+
   return (
     <>
     <motion.div
@@ -132,111 +164,167 @@ const InventoryPage = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold text-foreground">Inventory Management</h1>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => setIsAddProductModalOpen(true)}>
+        <h1 className="text-3xl font-bold gradient-text">Inventory Management</h1>
+        <Button 
+          className="bg-primary hover:bg-primary/90 text-primary-foreground focus-ring shadow-lg shadow-primary/20"
+          onClick={() => setIsAddProductModalOpen(true)}
+        >
           <PlusCircle className="mr-2 h-5 w-5" /> Add New Product/Service
         </Button>
       </div>
 
-      <Card className="shadow-lg glassmorphism">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <div>
-              <CardTitle>Product & Service List</CardTitle>
-              <CardDescription>Manage your products, services, stock levels, and pricing.</CardDescription>
-            </div>
-            <div className="flex gap-2 mt-2 sm:mt-0">
-              <Button variant="outline" size="sm" onClick={handleExportExcel}>
-                <FileSpreadsheet className="mr-2 h-4 w-4" /> Export Excel
+      <div className="grid gap-6">
+        {/* Inventory Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="card-glassmorphism card-hover">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Products</p>
+                <h3 className="text-2xl font-bold">{inventoryStats.totalProducts || 0}</h3>
+              </div>
+              <Package className="h-8 w-8 text-primary opacity-80" />
+            </CardContent>
+          </Card>
+          
+          <Card className="card-glassmorphism card-hover">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Services</p>
+                <h3 className="text-2xl font-bold">{inventoryStats.totalServices || 0}</h3>
+              </div>
+              <FileTextIcon className="h-8 w-8 text-blue-500 opacity-80" />
+            </CardContent>
+          </Card>
+          
+          <Card className="card-glassmorphism card-hover">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Low Stock Items</p>
+                <h3 className="text-2xl font-bold text-yellow-500">{inventoryStats.lowStockItems || 0}</h3>
+              </div>
+              <AlertCircle className="h-8 w-8 text-yellow-500 opacity-80" />
+            </CardContent>
+          </Card>
+          
+          <Card className="card-glassmorphism card-hover">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Out of Stock</p>
+                <h3 className="text-2xl font-bold text-red-500">{inventoryStats.outOfStockItems || 0}</h3>
+              </div>
+              <AlertCircle className="h-8 w-8 text-red-500 opacity-80" />
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Tabs and Content */}
+        <Card className="card-glassmorphism">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h2 className="text-2xl font-bold">Inventory Management</h2>
+                <p className="text-muted-foreground">Manage your products, services, and stock levels</p>
+              </div>
+              <Button 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground focus-ring shadow-lg shadow-primary/20"
+                onClick={() => setIsAddProductModalOpen(true)}
+              >
+                <PlusCircle className="mr-2 h-5 w-5" /> Add New Product
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExportPDF}>
-                <FileTextIcon className="mr-2 h-4 w-4" /> Export PDF
-              </Button>
             </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input placeholder="Search products or SKU..." className="pl-10 bg-background/70 dark:bg-input" />
+            
+            <InventoryTabs 
+              products={products} 
+              inventoryStats={inventoryStats} 
+              fetchProducts={fetchProducts}
+            />
+            
+            {/* Products Tab Content */}
+            <div className="mt-4">
+              <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="relative flex-grow">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search products or SKU..." 
+                    className="pl-10 bg-background/70 dark:bg-input focus-ring"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="focus-ring">
+                    <Filter className="mr-2 h-4 w-4" /> Filters
+                  </Button>
+                  <Button variant="outline" onClick={handleExportExcel} className="focus-ring">
+                    <FileSpreadsheet className="mr-2 h-4 w-4" /> Export
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-foreground">
+                  <thead className="text-xs text-muted-foreground uppercase bg-accent/50 dark:bg-accent/20 backdrop-blur-sm">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 rounded-tl-md">Product Name</th>
+                      <th scope="col" className="px-6 py-3">SKU</th>
+                      <th scope="col" className="px-6 py-3">Category</th>
+                      <th scope="col" className="px-6 py-3 text-right">Stock</th>
+                      <th scope="col" className="px-6 py-3 text-right">Price</th>
+                      <th scope="col" className="px-6 py-3 text-center rounded-tr-md">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="6" className="text-center py-8 text-muted-foreground">Loading products...</td>
+                      </tr>
+                    ) : products.length > 0 ? (
+                      products.map((product) => (
+                        <tr key={product.id} className="border-b dark:border-border/50 hover:bg-accent/30 dark:hover:bg-accent/10 transition-colors">
+                        <td className="px-6 py-4 font-medium whitespace-nowrap">{product.name}</td>
+                        <td className="px-6 py-4">{product.sku || 'N/A'}</td>
+                        <td className="px-6 py-4">
+                          {product.type === 'service' ? (
+                            <span className="px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-500">Service</span>
+                          ) : (
+                            product.category || 'Uncategorized'
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {product.type === 'service' ? 'N/A' : (
+                            <span className={`font-medium ${
+                              product.initialStock <= 0 ? 'text-red-500' : 
+                              product.initialStock < 10 ? 'text-yellow-500' : 'text-green-500'
+                            }`}>
+                              {product.initialStock}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right font-medium">{product.salePrice || product.purchasePrice}</td>
+                        <td className="px-6 py-4 text-center">
+                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 focus-ring" onClick={() => handleEditClick(product)}>Edit</Button>
+                        </td>
+                      </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="text-center py-8 text-muted-foreground">No products or services found. Add your first one!</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" /> Filters
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-foreground">
-              <thead className="text-xs text-muted-foreground uppercase bg-accent/50 dark:bg-accent/20">
-                <tr>
-                  <th scope="col" className="px-6 py-3">Product Name</th>
-                  <th scope="col" className="px-6 py-3">SKU</th>
-                  <th scope="col" className="px-6 py-3">Category</th>
-                  <th scope="col" className="px-6 py-3 text-right">Stock</th>
-                  <th scope="col" className="px-6 py-3 text-right">Price</th>
-                  <th scope="col" className="px-6 py-3 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="6" className="text-center py-8 text-muted-foreground">Loading products...</td>
-                  </tr>
-                ) : products.length > 0 ? (
-                  products.map((product) => (
-                    <tr key={product.id} className="border-b dark:border-border/50 hover:bg-accent/30 dark:hover:bg-accent/10">
-                    <td className="px-6 py-4 font-medium whitespace-nowrap">{product.name}</td>
-                    <td className="px-6 py-4">{product.sku || 'N/A'}</td> {/* Assuming SKU might not always exist */}
-                    <td className="px-6 py-4">{product.type === 'service' ? 'Service' : (product.category || 'Uncategorized')}</td> {/* Assuming category might not always exist */}
-                    <td className="px-6 py-4 text-right">{product.type === 'service' ? 'N/A' : product.initialStock}</td> {/* Using initialStock from backend, adjust if using current stock */}
-                    <td className="px-6 py-4 text-right">{product.salePrice || product.purchasePrice}</td> {/* Displaying sale price, fallback to purchase price */}
-                    <td className="px-6 py-4 text-center">
-                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80" onClick={() => handleEditClick(product)}>Edit</Button>{' '}
-                    </td>
-                  </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="text-center py-8 text-muted-foreground">No products or services found. Add your first one!</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="shadow-md glassmorphism">
-          <CardHeader>
-            <CardTitle>Quick Inventory Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button variant="outline" className="w-full justify-start"><Package className="mr-2 h-4 w-4" /> Manage Categories</Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => setIsStockAdjustmentModalOpen(true)}><Package className="mr-2 h-4 w-4" /> Stock Adjustments</Button>
-            <Button variant="outline" className="w-full justify-start"><Package className="mr-2 h-4 w-4" /> Internal Stock Transfer</Button>
-          </CardContent>
-        </Card>
-        <Card className="shadow-md glassmorphism">
-          <CardHeader>
-            <CardTitle>Inventory Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between"><span>Total Products:</span> <span className="font-semibold">3</span></div>
-            <div className="flex justify-between"><span>Total Services:</span> <span className="font-semibold">1</span></div>
-            <div className="flex justify-between"><span>Items Low in Stock:</span> <span className="font-semibold text-yellow-500">2</span></div>
-            <div className="flex justify-between"><span>Items Out of Stock:</span> <span className="font-semibold text-red-500">0</span></div>
           </CardContent>
         </Card>
       </div>
-
     </motion.div>
 
     <AddProductModal
       isOpen={isAddProductModalOpen}
       onClose={() => setIsAddProductModalOpen(false)}
       onProductAdded={fetchProducts}
-      products={products} // Pass products as prop
+      products={products}
       newProductData={newProduct}
       onInputChange={handleChange}
       onSave={handleSaveProduct}
@@ -247,14 +335,14 @@ const InventoryPage = () => {
       onClose={handleCloseEditModal}
       productToEdit={editingProduct}
       onProductUpdated={fetchProducts}
-      products={products} // Pass products as prop
+      products={products}
     />
 
     <StockAdjustmentModal
       isOpen={isStockAdjustmentModalOpen}
       onClose={() => setIsStockAdjustmentModalOpen(false)}
       onStockAdjusted={fetchProducts}
-      products={products} // Pass products as prop
+      products={products}
     />
     </>
   );

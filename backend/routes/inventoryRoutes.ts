@@ -1,15 +1,31 @@
-import express, { RequestHandler } from 'express';
-import { transferStock, stockIn, stockOut } from '../controllers/inventoryController';
+import express, { Router } from 'express';
+import { 
+  getBranchInventory, 
+  addStock, 
+  removeStock, 
+  transferStock, 
+  getTransactionHistory 
+} from '../controllers/inventoryController';
+import { protect } from '../middleware/authMiddleware';
 
-const router = express.Router();
+const router: Router = express.Router();
 
-// POST /api/inventory/transfer - Transfer stock between branches
-router.post('/transfer', transferStock as RequestHandler);
+// All routes are protected and require authentication
+router.use(protect);
 
-// POST /api/inventory/stock-in - Record stock addition
-router.post('/stock-in', stockIn as RequestHandler);
+// Get inventory transaction history
+router.get('/transactions', getTransactionHistory);
 
-// POST /api/inventory/stock-out - Record stock removal
-router.post('/stock-out', stockOut as RequestHandler);
+// Get inventory for a specific branch
+router.get('/:branchId', getBranchInventory);
+
+// Add stock to inventory
+router.post('/stock-in', addStock);
+
+// Remove stock from inventory
+router.post('/stock-out', removeStock);
+
+// Transfer stock between branches
+router.post('/transfer', transferStock);
 
 export default router;

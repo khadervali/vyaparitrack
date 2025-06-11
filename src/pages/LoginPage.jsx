@@ -33,11 +33,7 @@ const LoginPage = () => {
     try {
       // Use the imported api instance for the POST request
       const response = await api.post('/auth/login', { email, password });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid credentials");
-      }
+      const data = response.data;
 
       // Store JWT token and user info
       localStorage.setItem('token', data.token);

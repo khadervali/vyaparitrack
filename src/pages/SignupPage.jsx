@@ -32,19 +32,13 @@ const SignupPage = () => {
 
     console.log('useEffect is running');
     const fetchRoles = async () => {
-
         try {
           console.log('Fetching roles from API...');
-          const response = await api.get('/auth/roles'); // Use the api instance
-          if (response.status < 200 || response.status >= 300) {
-             // Handle non-2xx status codes if needed, though axios usually throws for 4xx/5xx
-             throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const data = await response.json();
-          setRoles(data);
+          const response = await api.get('/auth/roles');
+          console.log('Roles API response:', response.data);
+          setRoles(response.data);
         } catch (error) {
           console.error('Error fetching roles:', error);
-          // Optionally show a toast or error message to the user
           toast({
             title: "Error",
             description: "Failed to load roles. Please try again later.",
@@ -95,7 +89,8 @@ const SignupPage = () => {
         });
       const data = response.data;
 
-      if (response.ok) {
+      // Axios doesn't have an 'ok' property, check status code range instead
+      if (response.status >= 200 && response.status < 300) {
         toast({ title: "Account Created", description: data.message || "Your VyapariTrack account has been successfully created." });
         navigate('/login');
       } else {
