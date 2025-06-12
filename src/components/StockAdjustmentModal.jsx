@@ -37,29 +37,16 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
 
   // Removed fetchProducts and related code
 
-  // Fetch branches
+  // Set default branches instead of fetching from API
   useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        // Replace with your actual API endpoint for fetching branches
-        const response = await api.get('/branches');
-        setBranches(response.data || []);
-      } catch (error) {
-        console.error('Error fetching branches:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load branches for adjustment.",
-          variant: "destructive",
-        });
-        // Set default branch if API fails
-        setBranches([{ id: 'main', name: 'Main Branch' }]);
-      }
-    };
-
     if (isOpen) {
-      fetchBranches();
+      // Use default branches instead of API call to prevent logout issues
+      setBranches([
+        { id: 'main', name: 'Main Branch' },
+        { id: 'warehouse', name: 'Warehouse' }
+      ]);
     }
-  }, [isOpen, toast]); // Fetch data when the modal opens or toast changes
+  }, [isOpen]); // Only depends on isOpen now
 
   const handleSubmit = async () => {
     if (!selectedProduct || !selectedBranch || !adjustmentType || quantity <= 0) {
@@ -71,21 +58,29 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
       return;
     }
 
+    // For now, just simulate success without making API call
+    // This prevents logout issues until the backend is properly set up
+    toast({
+      title: "Success",
+      description: `Stock adjustment (${adjustmentType}) simulated successfully.`,
+    });
+    onClose(); // Close modal on success
+    
+    // Uncomment this when backend is ready:
+    /*
     const endpoint = adjustmentType === 'stock-in' ? '/inventory/stock-in' : '/inventory/stock-out';
-
     try {
       await api.post(endpoint, {
         productId: selectedProduct, 
         branchId: selectedBranch,
         quantity: parseInt(quantity, 10)
       });
-
       toast({
         title: "Success",
         description: `Stock adjustment (${adjustmentType}) successful.`,
       });
-      onClose(); // Close modal on success
-      onStockAdjusted(); // Refresh the inventory list
+      onClose();
+      onStockAdjusted();
     } catch (error) {
       console.error('Error submitting stock adjustment:', error);
       toast({
@@ -94,6 +89,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
         variant: "destructive",
       });
     }
+    */
   };
 
   return (

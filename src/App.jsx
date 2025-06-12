@@ -26,6 +26,7 @@ const SalesPage = lazy(() => import('@/pages/app/SalesPage'));
 const PurchasesPage = lazy(() => import('@/pages/app/PurchasesPage'));
 const ReportsPage = lazy(() => import('@/pages/app/ReportsPage'));
 const GstToolsPage = lazy(() => import('@/pages/app/GstToolsPage'));
+const VendorsPage = lazy(() => import('@/pages/app/VendorsPage'));
 const SettingsPage = lazy(() => import('@/pages/app/SettingsPage'));
 const UserProfilePage = lazy(() => import('@/pages/app/UserProfilePage'));
 
@@ -131,6 +132,7 @@ function App() {
             <Route path="sales" element={<SalesPage />} />
             <Route path="purchases" element={<PurchasesPage />} />
             <Route path="reports" element={<ReportsPage />} />
+            <Route path="vendors" element={<VendorsPage />} />
             <Route path="gst" element={<GstToolsPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<UserProfilePage />} />

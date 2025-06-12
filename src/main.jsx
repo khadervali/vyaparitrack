@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+import { VendorProvider } from './context/VendorContext'
 
 // Check for saved theme preference or use device preference
 const getThemePreference = () => {
@@ -22,6 +23,8 @@ if (theme === 'dark') {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <VendorProvider>
+      <App />
+    </VendorProvider>
   </React.StrictMode>,
 )

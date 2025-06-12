@@ -1,7 +1,19 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
 
-class Product extends Model {}
+class Product extends Model {
+  declare id: number;
+  declare name: string;
+  declare description: string;
+  declare price: number;
+  declare quantity: number;
+  declare type: string;
+  declare stockQuantity: number;
+  declare minStockQuantity: number;
+  declare vendor_id: number;
+  declare createdAt: Date;
+  declare updatedAt: Date;
+}
 
 Product.init({
   id: {
@@ -32,13 +44,13 @@ Product.init({
   },
   stockQuantity: {
     type: DataTypes.INTEGER,
-    field: 'stockQuantity', // Explicitly map to the database column name
+    field: 'stockQuantity',
     allowNull: true,
     defaultValue: 0,
   },
   minStockQuantity: {
     type: DataTypes.INTEGER,
-    field: 'minStockQuantity', // Explicitly map to the database column name
+    field: 'minStockQuantity',
     allowNull: false,
     defaultValue: 10,
   },
@@ -52,12 +64,12 @@ Product.init({
   },
   createdAt: {
     type: DataTypes.DATE,
-    field: 'createdAt', // Explicitly map to the database column name
+    field: 'createdAt',
     allowNull: false,
   },
   updatedAt: {
     type: DataTypes.DATE,
-    field: 'updatedAt', // Explicitly map to the database column name
+    field: 'updatedAt',
     allowNull: false,
   },
 }, {

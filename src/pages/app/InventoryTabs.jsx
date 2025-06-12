@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Tag, ArrowUpDown, Boxes, AlertCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +17,26 @@ const InventoryTabs = ({ products, inventoryStats, fetchProducts }) => {
     { id: 'low-stock', label: 'Low Stock', icon: <AlertCircle className="h-4 w-4" /> },
     { id: 'reports', label: 'Reports', icon: <BarChart3 className="h-4 w-4" /> }
   ];
+
+  // Toggle visibility of products content and add button based on active tab
+  useEffect(() => {
+    const productsContent = document.getElementById('products-content');
+    const addProductButton = document.getElementById('add-product-button');
+    
+    if (productsContent) {
+      productsContent.style.display = activeTab === 'products' ? 'block' : 'none';
+    }
+    
+    if (addProductButton) {
+      addProductButton.style.display = activeTab === 'products' ? 'block' : 'none';
+    }
+    
+    // Prevent unnecessary API calls when switching tabs
+    if (activeTab === 'products') {
+      // Only fetch products when switching to products tab
+      // fetchProducts is already called on component mount
+    }
+  }, [activeTab]);
 
   const handleTabClick = (tabId) => {
     if (tabId === 'stock-adjustment') {
@@ -44,14 +64,25 @@ const InventoryTabs = ({ products, inventoryStats, fetchProducts }) => {
         </div>
       </div>
 
-      {activeTab !== 'products' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-        >
-          {activeTab === 'categories' && (
+      <AnimatePresence mode="wait">
+        {activeTab === 'products' ? (
+          <motion.div
+            key="products"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Products tab content is rendered in parent component */}
+          </motion.div>
+        ) : activeTab === 'categories' ? (
+          <motion.div
+            key="categories"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
             <Card className="card-glassmorphism p-4">
               <CardContent className="p-0">
                 <h2 className="text-xl font-bold mb-4">Product Categories</h2>
@@ -65,9 +96,15 @@ const InventoryTabs = ({ products, inventoryStats, fetchProducts }) => {
                 </Button>
               </CardContent>
             </Card>
-          )}
-
-          {activeTab === 'stock-transfer' && (
+          </motion.div>
+        ) : activeTab === 'stock-transfer' ? (
+          <motion.div
+            key="stock-transfer"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
             <Card className="card-glassmorphism p-4">
               <CardContent className="p-0">
                 <h2 className="text-xl font-bold mb-4">Stock Transfer</h2>
@@ -81,9 +118,15 @@ const InventoryTabs = ({ products, inventoryStats, fetchProducts }) => {
                 </Button>
               </CardContent>
             </Card>
-          )}
-
-          {activeTab === 'low-stock' && (
+          </motion.div>
+        ) : activeTab === 'low-stock' ? (
+          <motion.div
+            key="low-stock"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
             <Card className="card-glassmorphism p-4">
               <CardContent className="p-0">
                 <h2 className="text-xl font-bold mb-4">Low Stock Items</h2>
@@ -97,9 +140,15 @@ const InventoryTabs = ({ products, inventoryStats, fetchProducts }) => {
                 </Button>
               </CardContent>
             </Card>
-          )}
-
-          {activeTab === 'reports' && (
+          </motion.div>
+        ) : activeTab === 'reports' ? (
+          <motion.div
+            key="reports"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
             <Card className="card-glassmorphism p-4">
               <CardContent className="p-0">
                 <h2 className="text-xl font-bold mb-4">Inventory Reports</h2>
@@ -113,9 +162,9 @@ const InventoryTabs = ({ products, inventoryStats, fetchProducts }) => {
                 </Button>
               </CardContent>
             </Card>
-          )}
-        </motion.div>
-      )}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <StockAdjustmentModal
         isOpen={isStockAdjustmentModalOpen}

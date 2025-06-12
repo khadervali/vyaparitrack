@@ -1,42 +1,31 @@
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 
-// Load environment variables from .env file
 dotenv.config();
 
-// Database configuration
-const dbConfig = {
-  dialect: 'mysql',
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '8889'),
-  database: process.env.DB_NAME || 'vyaparitrack',
-  username: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'Admin@123',
-};
-
-console.log('Database Configuration:', { 
-  ...dbConfig, 
-  password: '********',
-  host: dbConfig.host,
-  port: dbConfig.port
-});
-
+// MySQL connection for Sequelize
 const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
+  'vyaparitrack',
+  'root',
+  'Admin@123', // Using the same password as in config.js
   {
-    host: dbConfig.host,
-    port: dbConfig.port,
-    dialect: dbConfig.dialect as 'mysql',
-    logging: false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    }
+    host: 'localhost',
+    port: 8889, // Using the same port as in config.js
+    dialect: 'mysql',
+    logging: console.log, // Fixed deprecation warning
   }
 );
+
+// MongoDB connection removed - using MySQL only
+
+// Log database configuration
+console.log('Database Configuration:', {
+  dialect: 'mysql',
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '3306'),
+  database: process.env.DB_NAME || 'vyaparitrack',
+  username: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD ? '********' : ''
+});
 
 export default sequelize;

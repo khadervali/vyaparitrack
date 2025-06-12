@@ -9,7 +9,6 @@ export interface UserAttributes {
   email: string;
   password: string;
   role_id: number;
-  vendor_id?: number; // Add vendor_id for multi-vendor support
   first_name?: string;
   last_name?: string;
   is_active?: boolean;
@@ -25,7 +24,6 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public email!: string;
   public password!: string;
   public role_id!: number;
-  public vendor_id!: number;
   public first_name?: string;
   public last_name?: string;
   public is_active?: boolean;
@@ -75,10 +73,7 @@ User.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    vendor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true, // Vendor Admins will have their own id, staff will reference their admin's vendorId
-    },
+    // vendor_id removed - now using UserVendor junction table for many-to-many relationship
   },
   {
     sequelize,

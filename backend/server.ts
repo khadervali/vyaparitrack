@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import inventoryRoutes from './routes/inventoryRoutes';
 import productRoutes from './routes/productRoutes';
 import branchRoutes from './routes/branchRoutes';
+import vendorRoutes from './routes/vendorRoutes';
 
 dotenv.config({ path: './.env' });
 const app = express();
@@ -44,6 +45,7 @@ app.use('/api/auth', (req, res, next) => {
 app.use('/api/products', productRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/branches', branchRoutes);
+app.use('/api/vendors', vendorRoutes);
 
 // Start server and initialize database
 const startServer = async () => {
