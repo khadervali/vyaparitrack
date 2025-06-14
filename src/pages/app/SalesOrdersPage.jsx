@@ -14,6 +14,7 @@ const SalesOrdersPage = () => {
   const [error, setError] = useState(null); // Added error state
   const { toast } = useToast();
 
+  // Define fetchSalesOrders outside of useEffect
   const fetchSalesOrders = async () => {
     setLoading(true);
     setError(null);
@@ -22,9 +23,8 @@ const SalesOrdersPage = () => {
       if (response.status !== 200) {
         throw new Error('Failed to fetch sales orders');
       }
-      // Assuming the backend returns JSON, parse the response
-      const data = response.data; // Use response.data for Axios
-      setSalesOrders(data);
+      // Assuming the response data is directly the array of sales orders
+      setSalesOrders(response.data); 
     } catch (error) {
       console.error('Error fetching sales orders:', error);
       setError(error);
@@ -62,7 +62,7 @@ const SalesOrdersPage = () => {
       }
     };
   }, []); // Added dependency array to prevent infinite loop
-    fetchSalesOrders();
+  fetchSalesOrders(); // Call fetchSalesOrders inside useEffect
 
   return (
     <motion.div
@@ -197,5 +197,3 @@ const SalesOrdersPage = () => {
   );
 
 }; // Moved closing brace here
-
-export default SalesOrdersPage; // Moved export statement to the end
