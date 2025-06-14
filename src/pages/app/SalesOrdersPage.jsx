@@ -37,7 +37,6 @@ const SalesOrdersPage = () => {
         setLoading(false);
       }
     };
-    };
     fetchSalesOrders();
 
   return (
