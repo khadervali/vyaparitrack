@@ -37,6 +37,7 @@ const SalesOrdersPage = () => {
         setLoading(false);
       }
     };
+  }, []); // Added dependency array to prevent infinite loop
     fetchSalesOrders();
 
   return (
@@ -92,11 +93,12 @@ const SalesOrdersPage = () => {
                   </tr>
                 ) : error ? (
  <td colSpan="6" className="text-center py-8 text-destructive">{error.message || 'Error loading sales orders.'}</td>
-                  </tr>
                 ) : (salesOrders?.length ?? 0) === 0 ? (
-                  <tr>
+                  <>
+ <tr>
                     <td colSpan="5" className="text-center py-8 text-muted-foreground">No sales orders yet.</td>
-                  </tr>
+ </tr>
+ </>
                 ) : (
                   salesOrders.map((order) => (
                     <tr key={order._id || order.id} className="hover:bg-accent/30 dark:hover:bg-accent/10">
@@ -169,6 +171,7 @@ const SalesOrdersPage = () => {
       {/* <NewSalesOrderModal /> */}
     </motion.div>
   );
-};
 
-export default SalesOrdersPage;
+}; // Moved closing brace here
+
+export default SalesOrdersPage; // Moved export statement to the end
