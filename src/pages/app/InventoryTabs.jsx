@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import StockAdjustmentModal from '@/components/StockAdjustmentModal';
 import LowStockItems from '@/components/LowStockItems';
+import CategoryManagement from '@/components/CategoryManagement';
 
 const InventoryTabs = ({ products, inventoryStats, fetchProducts }) => {
   const [isStockAdjustmentModalOpen, setIsStockAdjustmentModalOpen] = useState(false);
@@ -76,9 +77,8 @@ const InventoryTabs = ({ products, inventoryStats, fetchProducts }) => {
             transition={{ duration: 0.2 }}
           >
             <Card className="card-glassmorphism p-4">
-              <CardContent className="p-0">
-                <h2 className="text-xl font-bold mb-4">Product Categories</h2>
-                <p>Categories functionality will be loaded here.</p>
+              <CardContent className="p-4">
+                <CategoryManagement />
               </CardContent>
             </Card>
           </motion.div>
