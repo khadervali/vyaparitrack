@@ -14,6 +14,30 @@ const SalesOrdersPage = () => {
   const [error, setError] = useState(null); // Added error state
   const { toast } = useToast();
 
+  const fetchSalesOrders = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get('/api/salesorders'); // Fetch sales orders from the backend
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch sales orders');
+      }
+      // Assuming the backend returns JSON, parse the response
+      const data = response.data; // Use response.data for Axios
+      setSalesOrders(data);
+    } catch (error) {
+      console.error('Error fetching sales orders:', error);
+      setError(error);
+      toast({
+        title: "Error",
+        description: "Failed to load sales orders.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchSalesOrders = async () => {
       setLoading(true);

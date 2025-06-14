@@ -10,8 +10,11 @@ import InventoryPage from '@/pages/app/InventoryPage';
 import LowStockPage from '@/pages/app/LowStockPage';
 import SalesPage from '@/pages/app/SalesPage';
 import SalesOrdersPage from '@/pages/app/SalesOrdersPage';
+import PurchasesPage from '@/pages/app/PurchasesPage';
+import ReportsPage from '@/pages/app/ReportsPage';
 import CustomersPage from '@/pages/app/CustomersPage';
 import SettingsPage from '@/pages/app/SettingsPage';
+import GstToolsPage from '@/pages/app/GstToolsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { VendorProvider } from '@/context/VendorContext';
 
@@ -47,10 +50,10 @@ function App() {
             <Route path="low-stock" element={<LowStockPage />} />
             <Route path="sales" element={<SalesPage />} />
             <Route path="sales-orders" element={<SalesOrdersPage />} />
-            <Route path="purchases" element={<CustomersPage />} />
-            <Route path="reports" element={<div>Reports Page</div>} />
-            <Route path="vendors" element={<div>Vendors Page</div>} />
-            <Route path="gst" element={<div>GST Tools Page</div>} />
+            <Route path="purchases" element={<PurchasesPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="customers" element={<CustomersPage />} />
+            <Route path="gst" element={<GstToolsPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
           

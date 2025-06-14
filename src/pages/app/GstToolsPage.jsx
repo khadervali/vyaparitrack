@@ -1,119 +1,164 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Percent, Search, UploadCloud } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import GSTReportGenerator from '@/components/dashboard/GSTReportGenerator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-
-const ToolCard = ({ title, description, icon, actionText, onAction }) => (
-  <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 glassmorphism">
-    <CardHeader className="flex flex-row items-center space-x-4 pb-4">
-      {React.cloneElement(icon, { className: "w-8 h-8 text-primary" })}
-      <CardTitle className="text-lg">{title}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-sm text-muted-foreground mb-4">{description}</p>
-      {onAction && (
-        <Button variant="outline" size="sm" onClick={onAction}>
-          {actionText || "Use Tool"}
-        </Button>
-      )}
-    </CardContent>
-  </Card>
-);
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const GstToolsPage = () => {
-  const tools = [
-    { 
-      title: "GSTIN Search", 
-      description: "Verify GST Identification Numbers quickly and easily.", 
-      icon: <Search />,
-      actionText: "Search GSTIN",
-      onAction: () => alert("GSTIN Search tool clicked (placeholder)")
-    },
-    { 
-      title: "HSN/SAC Code Finder", 
-      description: "Find appropriate HSN or SAC codes for your products and services.", 
-      icon: <Percent />,
-      actionText: "Find Code",
-      onAction: () => alert("HSN/SAC Finder tool clicked (placeholder)")
-    },
-    { 
-      title: "GSTR-2A/2B Reconciliation (Coming Soon)", 
-      description: "Automate matching of purchase invoices with supplier-filed returns.", 
-      icon: <FileText />,
-    },
-    { 
-      title: "E-Invoice Generation (Coming Soon)", 
-      description: "Generate IRN and QR codes for B2B invoices as per government norms.", 
-      icon: <UploadCloud />,
-    },
-    { 
-      title: "GST Return Filing Helper (Coming Soon)", 
-      description: "Prepare data for GSTR-1 and GSTR-3B filings.", 
-      icon: <FileText />,
-    },
-    { 
-      title: "Default GST Rate Configuration", 
-      description: "Set default GST percentages for faster invoice creation.", 
-      icon: <Percent />,
-      actionText: "Configure Rates",
-      onAction: () => alert("Configure GST Rates tool clicked (placeholder)")
-    },
-  ];
-
   return (
     <motion.div
+      className="space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6"
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold text-foreground">GST Tools & Compliance</h1>
+        <h1 className="text-3xl font-bold gradient-text">GST Tools</h1>
       </div>
 
-      <Card className="shadow-lg glassmorphism">
-        <CardHeader>
-          <CardTitle>GST Compliance Dashboard</CardTitle>
-          <CardDescription>Overview of your GST filing status and important deadlines (Placeholder).</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="p-4 bg-secondary/30 dark:bg-secondary/20 rounded-lg">
-              <p className="text-sm text-muted-foreground">GSTR-1 Due Date</p>
-              <p className="text-xl font-semibold text-foreground">11th June 2025</p>
-            </div>
-            <div className="p-4 bg-secondary/30 dark:bg-secondary/20 rounded-lg">
-              <p className="text-sm text-muted-foreground">GSTR-3B Due Date</p>
-              <p className="text-xl font-semibold text-foreground">20th June 2025</p>
-            </div>
-            <div className="p-4 bg-secondary/30 dark:bg-secondary/20 rounded-lg">
-              <p className="text-sm text-muted-foreground">Last Filed</p>
-              <p className="text-xl font-semibold text-foreground">May 2025</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tools.map((tool, index) => (
-          <motion.div
-            key={tool.title}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-          >
-            <ToolCard 
-              title={tool.title} 
-              description={tool.description} 
-              icon={tool.icon} 
-              actionText={tool.actionText}
-              onAction={tool.onAction}
-            />
-          </motion.div>
-        ))}
-      </div>
+      <Tabs defaultValue="reports" className="w-full">
+        <TabsList className="grid grid-cols-3 mb-4">
+          <TabsTrigger value="reports">GST Reports</TabsTrigger>
+          <TabsTrigger value="calculator">GST Calculator</TabsTrigger>
+          <TabsTrigger value="hsn">HSN Lookup</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="reports" className="space-y-4">
+          <GSTReportGenerator />
+        </TabsContent>
+        
+        <TabsContent value="calculator" className="space-y-4">
+          <Card className="card-glassmorphism">
+            <CardHeader>
+              <CardTitle>GST Calculator</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Amount Type</label>
+                    <Select defaultValue="exclusive">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select amount type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="exclusive">Exclusive of GST</SelectItem>
+                        <SelectItem value="inclusive">Inclusive of GST</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Amount (₹)</label>
+                    <Input type="number" placeholder="Enter amount" />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">GST Rate (%)</label>
+                    <Select defaultValue="18">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select GST rate" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">0%</SelectItem>
+                        <SelectItem value="5">5%</SelectItem>
+                        <SelectItem value="12">12%</SelectItem>
+                        <SelectItem value="18">18%</SelectItem>
+                        <SelectItem value="28">28%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                    Calculate
+                  </Button>
+                </div>
+                
+                <div className="bg-black/5 dark:bg-white/5 rounded-lg p-4">
+                  <h3 className="text-lg font-medium mb-4">Results</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Base Amount:</span>
+                      <span className="font-medium">₹1,000.00</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span>CGST (9%):</span>
+                      <span className="font-medium">₹90.00</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span>SGST (9%):</span>
+                      <span className="font-medium">₹90.00</span>
+                    </div>
+                    
+                    <div className="border-t pt-2 flex justify-between">
+                      <span className="font-medium">Total Amount:</span>
+                      <span className="font-bold">₹1,180.00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="hsn" className="space-y-4">
+          <Card className="card-glassmorphism">
+            <CardHeader>
+              <CardTitle>HSN/SAC Code Lookup</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Input type="text" placeholder="Search by product name or HSN code" />
+                  </div>
+                  <Button>Search</Button>
+                </div>
+                
+                <div className="border rounded-md overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-black/5 dark:bg-white/5">
+                      <tr>
+                        <th className="text-left p-3 text-sm font-medium">HSN/SAC Code</th>
+                        <th className="text-left p-3 text-sm font-medium">Description</th>
+                        <th className="text-left p-3 text-sm font-medium">GST Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t">
+                        <td className="p-3 text-sm">8471</td>
+                        <td className="p-3 text-sm">Computers and peripheral equipment</td>
+                        <td className="p-3 text-sm">18%</td>
+                      </tr>
+                      <tr className="border-t">
+                        <td className="p-3 text-sm">6403</td>
+                        <td className="p-3 text-sm">Footwear with leather uppers</td>
+                        <td className="p-3 text-sm">5%</td>
+                      </tr>
+                      <tr className="border-t">
+                        <td className="p-3 text-sm">9503</td>
+                        <td className="p-3 text-sm">Toys, games and sports requisites</td>
+                        <td className="p-3 text-sm">12%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <p className="text-xs text-muted-foreground">
+                  Note: HSN (Harmonized System of Nomenclature) codes are used for classifying goods under GST.
+                  SAC (Services Accounting Code) is used for services.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </motion.div>
   );
 };

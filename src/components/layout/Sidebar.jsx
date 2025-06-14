@@ -20,7 +20,7 @@ const Sidebar = ({ isMobile, setIsMobileMenuOpen }) => {
     {
       title: 'Dashboard',
       icon: <LayoutDashboard className="h-5 w-5" />,
-      path: '/',
+      path: '/dashboard',
     },
     {
       title: 'Inventory',
@@ -37,6 +37,21 @@ const Sidebar = ({ isMobile, setIsMobileMenuOpen }) => {
       title: 'Sales',
       icon: <ShoppingCart className="h-5 w-5" />,
       path: '/sales',
+    },
+    {
+      title: 'Purchases',
+      icon: <Package className="h-5 w-5" />,
+      path: '/purchases',
+    },
+    {
+      title: 'Reports',
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      path: '/reports',
+    },
+    {
+      title: 'GST Tools',
+      icon: <Package className="h-5 w-5" />,
+      path: '/gst',
     },
     {
       title: 'Customers',

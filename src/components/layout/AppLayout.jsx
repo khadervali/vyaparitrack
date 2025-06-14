@@ -120,7 +120,7 @@ const AppLayout = () => {
     { to: '/app/sales', icon: <IndianRupee />, text: 'Sales' },
     { to: '/app/purchases', icon: <ShoppingCart />, text: 'Purchases' },
     { to: '/app/reports', icon: <BarChart3 />, text: 'Reports' },
-    { to: '/app/vendors', icon: <Store />, text: 'Vendors' },
+    { to: '/app/customers', icon: <UserCircle />, text: 'Customers' },
     { to: '/app/gst', icon: <FileText />, text: 'GST Tools' },
     { to: '/app/settings', icon: <Settings />, text: 'Settings' },
   ];
