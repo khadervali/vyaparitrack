@@ -9,6 +9,7 @@ import DashboardPage from '@/pages/app/DashboardPage';
 import InventoryPage from '@/pages/app/InventoryPage';
 import LowStockPage from '@/pages/app/LowStockPage';
 import SalesPage from '@/pages/app/SalesPage';
+import SalesOrdersPage from '@/pages/app/SalesOrdersPage';
 import CustomersPage from '@/pages/app/CustomersPage';
 import SettingsPage from '@/pages/app/SettingsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
@@ -45,6 +46,7 @@ function App() {
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="low-stock" element={<LowStockPage />} />
             <Route path="sales" element={<SalesPage />} />
+            <Route path="sales-orders" element={<SalesOrdersPage />} />
             <Route path="purchases" element={<CustomersPage />} />
             <Route path="reports" element={<div>Reports Page</div>} />
             <Route path="vendors" element={<div>Vendors Page</div>} />
