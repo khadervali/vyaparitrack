@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const SettingsPage = () => {
+const CustomersPage = () => {
   return (
     <motion.div
       className="space-y-6"
@@ -10,17 +10,17 @@ const SettingsPage = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold gradient-text">Settings</h1>
+        <h1 className="text-3xl font-bold gradient-text">Customers</h1>
       </div>
       
       <div className="p-8 text-center">
         <h2 className="text-2xl font-semibold mb-4">Coming Soon</h2>
         <p className="text-muted-foreground">
-          The settings module is currently under development.
+          The customer management module is currently under development.
         </p>
       </div>
     </motion.div>
   );
 };
 
-export default SettingsPage;
+export default CustomersPage;

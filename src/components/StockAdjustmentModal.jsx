@@ -3,149 +3,110 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';import api from '@/lib/api';
-
+import { useToast } from '@/components/ui/use-toast';
+import api from '@/lib/api';
 
 const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) => {
   const [selectedProduct, setSelectedProduct] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('');
-  const [adjustmentType, setAdjustmentType] = useState('stock-in'); // 'stock-in' or 'stock-out'
+  const [adjustmentType, setAdjustmentType] = useState('stock-in');
   const [quantity, setQuantity] = useState('');
   const [productList, setProductList] = useState([]);
-  const [branches, setBranches] = useState([]); // State to store fetched branches
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
-      setProductList(products || []);
+      setProductList(products?.filter(p => p.type !== 'service') || []);
+      setSelectedProduct('');
+      setAdjustmentType('stock-in');
+      setQuantity('');
     }
   }, [isOpen, products]);
 
-  // Removed fetchProducts and related code
-
-  // Set default branches instead of fetching from API
-  useEffect(() => {
-    if (isOpen) {
-      // Use default branches instead of API call to prevent logout issues
-      setBranches([
-        { id: 'main', name: 'Main Branch' },
-        { id: 'warehouse', name: 'Warehouse' }
-      ]);
-    }
-  }, [isOpen]); // Only depends on isOpen now
-
   const handleSubmit = async () => {
-    if (!selectedProduct || !selectedBranch || !adjustmentType || quantity <= 0) {
+    if (!selectedProduct || !adjustmentType || quantity <= 0) {
       toast({
         title: "Error",
-        description: "Please fill in all fields and provide a valid quantity.",
+        description: "Please select a product and provide a valid quantity.",
         variant: "destructive",
       });
       return;
     }
 
-    // For now, just simulate success without making API call
-    // This prevents logout issues until the backend is properly set up
-    toast({
-      title: "Success",
-      description: `Stock adjustment (${adjustmentType}) simulated successfully.`,
-    });
-    onClose(); // Close modal on success
+    setIsLoading(true);
     
-    // Uncomment this when backend is ready:
-    /*
-    const endpoint = adjustmentType === 'stock-in' ? '/inventory/stock-in' : '/inventory/stock-out';
     try {
-      await api.post(endpoint, {
-        productId: selectedProduct, 
-        branchId: selectedBranch,
-        quantity: parseInt(quantity, 10)
+      // Call the API to adjust stock
+      const response = await api.post('/inventory/adjust-stock', {
+        productId: selectedProduct,
+        quantity: parseInt(quantity),
+        adjustmentType
       });
+      
       toast({
         title: "Success",
-        description: `Stock adjustment (${adjustmentType}) successful.`,
+        description: `Stock ${adjustmentType === 'stock-in' ? 'increased' : 'decreased'} by ${quantity} units.`,
       });
+      
+      // Close modal and refresh products
       onClose();
       onStockAdjusted();
     } catch (error) {
-      console.error('Error submitting stock adjustment:', error);
+      console.error('Error adjusting stock:', error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to submit stock adjustment.",
+        description: error.response?.data?.message || "Failed to adjust stock.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
-    */
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Stock Adjustment</DialogTitle>
-          <DialogDescription>
-            Adjust the stock quantity for a product in a specific branch.
-          </DialogDescription>
+          <DialogTitle>Adjust Stock</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="product" className="text-right">
               Product
             </Label>
-             <Select onValueChange={setSelectedProduct} value={selectedProduct}>
-              <SelectTrigger className="col-span-3" id="product">
-                <SelectValue placeholder="Select a product" />
-              </SelectTrigger>
-              <SelectContent>
-                {productList.map((product) => (
-                  <SelectItem key={product.id || product._id} value={product.id || product._id}>{product.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select 
+              id="product"
+              value={selectedProduct}
+              onChange={(e) => setSelectedProduct(e.target.value)}
+              className="col-span-3 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            >
+              <option value="">Select a product</option>
+              {productList.map((product) => (
+                <option key={product.id} value={product.id}>{product.name}</option>
+              ))}
+            </select>
           </div>
+          
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="branch" className="text-right">
-              Branch
-            </Label>
-            <Select onValueChange={setSelectedBranch} value={selectedBranch}>
-              <SelectTrigger className="col-span-3" id="branch">
-                <SelectValue placeholder="Select a branch" />
-              </SelectTrigger>
-              <SelectContent>
-                 {branches.map((branch) => (
-                  <SelectItem key={branch.id || branch._id} value={branch.id || branch._id}>{branch.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="type" className="text-right">
               Type
             </Label>
-            <Select onValueChange={setAdjustmentType} value={adjustmentType}>
-              <SelectTrigger className="col-span-3" id="type">
-                <SelectValue placeholder="Select adjustment type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="stock-in">Stock In</SelectItem>
-                <SelectItem value="stock-out">Stock Out</SelectItem>
-              </SelectContent>
-            </Select>
+            <select 
+              id="type"
+              value={adjustmentType}
+              onChange={(e) => setAdjustmentType(e.target.value)}
+              className="col-span-3 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            >
+              <option value="stock-in">Stock In</option>
+              <option value="stock-out">Stock Out</option>
+            </select>
           </div>
+          
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="quantity" className="text-right">
               Quantity
@@ -156,10 +117,15 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               className="col-span-3"
+              min="1"
             />
           </div>
         </div>
-        <Button type="submit" onClick={handleSubmit}>Submit Adjustment</Button>
+        <div className="flex justify-end">
+          <Button type="button" onClick={handleSubmit} disabled={isLoading}>
+            {isLoading ? 'Processing...' : 'Adjust Stock'}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
