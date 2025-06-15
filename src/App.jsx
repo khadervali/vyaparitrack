@@ -9,10 +9,10 @@ import DashboardPage from '@/pages/app/DashboardPage';
 import InventoryPage from '@/pages/app/InventoryPage';
 import LowStockPage from '@/pages/app/LowStockPage';
 import SalesPage from '@/pages/app/SalesPage';
-import SalesOrdersPage from '@/pages/app/SalesOrdersPage';
 import PurchasesPage from '@/pages/app/PurchasesPage';
 import ReportsPage from '@/pages/app/ReportsPage';
 import CustomersPage from '@/pages/app/CustomersPage';
+import ProfilePage from '@/pages/app/ProfilePage';
 import SettingsPage from '@/pages/app/SettingsPage';
 import GstToolsPage from '@/pages/app/GstToolsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
@@ -49,12 +49,13 @@ function App() {
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="low-stock" element={<LowStockPage />} />
             <Route path="sales" element={<SalesPage />} />
-            <Route path="sales-orders" element={<SalesOrdersPage />} />
+            <Route path="sales-orders" element={<SalesPage />} />
             <Route path="purchases" element={<PurchasesPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="gst" element={<GstToolsPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
           
           {/* Redirect root to app */}

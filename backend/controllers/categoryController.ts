@@ -1,31 +1,21 @@
-// backend/controllers/categoryController.ts
 import { Request, Response } from 'express';
-import { CustomRequest } from '../middleware/authMiddleware';
 import Category from '../models/Category.sequelize';
-import { getCache, setCache, clearCache } from '../utils/cacheUtils';
+import { CustomRequest } from '../middleware/authMiddleware';
 
-export const getCategories = async (req: Request, res: Response): Promise<void> => {
+// Get all categories for a vendor
+export const getCategories = async (req: CustomRequest, res: Response) => {
   try {
-    const vendorId = (req as CustomRequest).user?.vendor_id;
+    const vendorId = req.user?.vendor_id;
     
     if (!vendorId) {
-      res.status(401).json({ message: 'Vendor ID not found in token' });
-      return;
+      return res.status(400).json({ message: 'Vendor ID is required' });
     }
-    
-    const cacheKey = `categories-${vendorId}`;
-    const cachedData = getCache(cacheKey);
-    
-    if (cachedData) {
-      res.json(cachedData);
-      return;
-    }
-    
+
     const categories = await Category.findAll({
-      where: { vendor_id: vendorId }
+      where: { vendorId },
+      order: [['name', 'ASC']]
     });
-    
-    setCache(cacheKey, categories);
+
     res.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -33,26 +23,96 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-export const createCategory = async (req: Request, res: Response): Promise<void> => {
+// Create a new category
+export const createCategory = async (req: CustomRequest, res: Response) => {
   try {
+    const vendorId = req.user?.vendor_id;
     const { name, description } = req.body;
-    const vendorId = (req as CustomRequest).user?.vendor_id;
     
     if (!vendorId) {
-      res.status(401).json({ message: 'Vendor ID not found in token' });
-      return;
+      return res.status(400).json({ message: 'Vendor ID is required' });
     }
     
+    if (!name) {
+      return res.status(400).json({ message: 'Category name is required' });
+    }
+
+    // Check if category already exists for this vendor
+    const existingCategory = await Category.findOne({
+      where: { 
+        name,
+        vendorId
+      }
+    });
+
+    if (existingCategory) {
+      return res.status(400).json({ message: 'Category with this name already exists' });
+    }
+
     const category = await Category.create({
       name,
       description,
-      vendor_id: vendorId
+      vendorId
     });
-    
-    clearCache(`categories-${vendorId}`);
+
     res.status(201).json(category);
   } catch (error) {
     console.error('Error creating category:', error);
     res.status(500).json({ message: 'Failed to create category' });
   }
+};
+
+// Update a category
+export const updateCategory = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, description } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ message: 'Category name is required' });
+    }
+
+    const category = await Category.findByPk(id);
+    
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    await category.update({
+      name,
+      description
+    });
+
+    res.json(category);
+  } catch (error) {
+    console.error('Error updating category:', error);
+    res.status(500).json({ message: 'Failed to update category' });
+  }
+};
+
+// Delete a category
+export const deleteCategory = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    const category = await Category.findByPk(id);
+    
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    await category.destroy();
+
+    res.json({ message: 'Category deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    res.status(500).json({ message: 'Failed to delete category' });
+  }
+};
+
+export default {
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory
 };

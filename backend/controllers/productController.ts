@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { CustomRequest } from '../middleware/authMiddleware';
 import Product from '../models/Product.sequelize';
+import Category from '../models/Category.sequelize';
+import sequelize from '../config/database';
 import { getCache, setCache, clearCache } from '../utils/cacheUtils';
 import { Op } from 'sequelize';
 
@@ -33,8 +35,17 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
       whereClause.name = { [Op.like]: `%${searchTerm}%` };
     }
     
-    // Fetch from database
-    const products = await Product.findAll({ where: whereClause });
+    // Fetch from database with category information
+    const products = await Product.findAll({ 
+      where: whereClause,
+      include: [
+        { 
+          model: Category, 
+          as: 'category',
+          attributes: ['id', 'name', 'description'] 
+        }
+      ]
+    });
     
     // Store in cache
     setCache(cacheKey, products);
@@ -72,7 +83,14 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
       where: {
         id: productId,
         vendor_id: vendorId
-      }
+      },
+      include: [
+        { 
+          model: Category, 
+          as: 'category',
+          attributes: ['id', 'name', 'description'] 
+        }
+      ]
     });
     
     if (!product) {
@@ -102,15 +120,61 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
       return;
     }
     
-    const product = await Product.create({
-      ...req.body,
-      vendor_id: vendorId
-    });
+    // Use category_id directly
+    let productData = { ...req.body, vendor_id: vendorId };
+    
+    // Ensure category_id is properly set as a number
+    if (productData.category_id) {
+      productData.category_id = Number(productData.category_id);
+    }
+    
+    // Create product first
+    const product = await Product.create(productData);
+    
+    // Then directly update the category_id in the database
+    if (productData.category_id) {
+      try {
+        // Try with category_id
+        await sequelize.query(
+          'UPDATE products SET category_id = ? WHERE id = ?',
+          {
+            replacements: [productData.category_id, product.id],
+            type: sequelize.QueryTypes.UPDATE
+          }
+        );
+        
+        // Also try with categoryId
+        await sequelize.query(
+          'UPDATE products SET categoryId = ? WHERE id = ?',
+          {
+            replacements: [productData.category_id, product.id],
+            type: sequelize.QueryTypes.UPDATE
+          }
+        );
+      } catch (error) {
+        console.error('Error updating category_id:', error);
+      }
+    }
     
     // Clear products cache for this vendor
     clearCache(`products-${vendorId}`);
     
-    res.status(201).json(product);
+    // Fetch the created product with category information
+    const createdProduct = await Product.findOne({
+      where: {
+        id: product.id,
+        vendor_id: vendorId
+      },
+      include: [
+        { 
+          model: Category, 
+          as: 'category',
+          attributes: ['id', 'name', 'description'] 
+        }
+      ]
+    });
+    
+    res.status(201).json(createdProduct);
   } catch (error) {
     console.error('Error creating product:', error);
     res.status(500).json({ message: 'Failed to create product' });
@@ -121,6 +185,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 // @route   PUT /api/products/:id
 // @access  Private
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
+  debugger;
   try {
     const productId = parseInt(req.params.id);
     const vendorId = (req as CustomRequest).user?.vendor_id;
@@ -141,14 +206,61 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ message: 'Product not found' });
       return;
     }
+
+    // Use update data directly
+    let updateData = { ...req.body };
     
-    await product.update(req.body);
+    // Update all fields including category_id
+    await product.update({
+      ...updateData,
+      categoryId: updateData.category_id // Try both field names
+    });
+    
+    // Force update directly in the database to ensure category_id is set
+    if (updateData.category_id) {
+      try {
+        // Try with category_id
+        await sequelize.query(
+          'UPDATE products SET category_id = ? WHERE id = ?',
+          {
+            replacements: [updateData.category_id, productId],
+            type: sequelize.QueryTypes.UPDATE
+          }
+        );
+        
+        // Also try with categoryId
+        await sequelize.query(
+          'UPDATE products SET categoryId = ? WHERE id = ?',
+          {
+            replacements: [updateData.category_id, productId],
+            type: sequelize.QueryTypes.UPDATE
+          }
+        );
+      } catch (error) {
+        console.error('Error updating category_id:', error);
+      }
+    }
     
     // Clear caches
     clearCache(`products-${vendorId}`);
     clearCache(`product-${productId}`);
     
-    res.json(product);
+    // Fetch the updated product with category information
+    const updatedProduct = await Product.findOne({
+      where: {
+        id: productId,
+        vendor_id: vendorId
+      },
+      include: [
+        { 
+          model: Category, 
+          as: 'category',
+          attributes: ['id', 'name', 'description'] 
+        }
+      ]
+    });
+    
+    res.json(updatedProduct);
   } catch (error) {
     console.error('Error updating product:', error);
     res.status(500).json({ message: 'Failed to update product' });

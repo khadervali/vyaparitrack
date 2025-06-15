@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,23 +22,51 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
   const [quantity, setQuantity] = useState('');
   const [sku, setSku] = useState('');
   const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [itemType, setItemType] = useState('product'); // 'product' or 'service'
   const { toast } = useToast();
   const { currentVendor } = useVendor();
+  
+  // Fetch categories when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen]);
+  
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/categories');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      // Fallback to sample categories if API fails
+      setCategories([
+        { id: 1, name: 'Electronics' },
+        { id: 2, name: 'Clothing' },
+        { id: 3, name: 'Groceries' }
+      ]);
+    }
+  };
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
+      // Find the selected category object
+      const selectedCategory = categories.find(cat => cat.name === category);
+      
       const response = await api.post('/products', {
         name,
         description,
         price: parseFloat(price),
         quantity: itemType === 'product' ? parseInt(quantity, 10) : 0,
+        stockQuantity: itemType === 'product' ? parseInt(quantity, 10) : 0,
+        minStockQuantity: 10,
         sku: itemType === 'product' ? sku : '',
-        category,
+        category_id: selectedCategory ? selectedCategory.id : null,
         type: itemType,
         vendor_id: currentVendor?.id || 1
       });
@@ -130,7 +158,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
             <>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="quantity" className="text-right">
-                  Initial Stock
+                  Stock Quantity
                 </Label>
                 <Input
                   id="quantity"
@@ -159,12 +187,17 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
             <Label htmlFor="category" className="text-right">
               Category
             </Label>
-            <Input
+            <select
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="col-span-3"
-            />
+              className="col-span-3 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            >
+              <option value="">Select a category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isLoading}>

@@ -7,6 +7,7 @@ import inventoryRoutes from './routes/inventoryRoutes';
 import productRoutes from './routes/productRoutes';
 import branchRoutes from './routes/branchRoutes';
 import vendorRoutes from './routes/vendorRoutes';
+import categoryRoutes from './routes/categoryRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 
 dotenv.config({ path: './.env' });
@@ -47,7 +48,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/branches', branchRoutes);
 app.use('/api/vendors', vendorRoutes);
-//app.use('/api/analytics', analyticsRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Start server and initialize database
 const startServer = async () => {

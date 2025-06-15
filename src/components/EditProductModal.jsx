@@ -17,13 +17,37 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
     name: '',
     description: '',
     price: 0,
+    category: '',
     // Quantity and branchId are managed via Inventory,
     // but we might need branchId for certain updates if the API requires it.
     // quantity: '',
     // branchId: '',
   });
+  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  
+  // Fetch categories when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen]);
+  
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/categories');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      // Fallback to sample categories if API fails
+      setCategories([
+        { id: 1, name: 'Electronics' },
+        { id: 2, name: 'Clothing' },
+        { id: 3, name: 'Groceries' }
+      ]);
+    }
+  };
 
   useEffect(() => {
     if (productToEdit && isOpen) { // Only update when modal is open and productToEdit changes
@@ -31,7 +55,9 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
         name: productToEdit.name || '',
         description: productToEdit.description || '',
         price: productToEdit.price || '',
-        quantity: productToEdit.quantity || '',
+        quantity: productToEdit.stockQuantity || productToEdit.quantity || 0,
+        minStockQuantity: productToEdit.minStockQuantity || 10,
+        category: productToEdit.category?.name || productToEdit.category || '',
         branchId: productToEdit.branchId || '', // Assuming branchId is part of product or inventory data
       });
     } else if (!isOpen) { // Reset form when modal closes
@@ -43,7 +69,7 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
         // branchId: '',
       });
     }
-  }, [productToEdit]);
+  }, [productToEdit, isOpen]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -56,22 +82,22 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
 
     try {
       // Construct the data to send based on item type
+      // Find the selected category object
+      const selectedCategory = categories.find(cat => cat.name === formData.category);
+      
       const dataToSend = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price), // Ensure price is a number
-        // We are not updating quantity or branchId directly via product update
+        stockQuantity: parseInt(formData.quantity, 10),
+        minStockQuantity: parseInt(formData.minStockQuantity || 10, 10),
+        category_id: selectedCategory ? selectedCategory.id : null
       };
       
-      const response = await api.put(`/api/products/${productToEdit._id}`, dataToSend);
+      const response = await api.put(`/products/${productToEdit.id}`, dataToSend);
       
-      // Handle successful response (status code 2xx)
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update product');
-      }
-
-      const updatedProduct = await response.json();
+      // Handle successful response from axios
+      const updatedProduct = response.data;
       toast({
         title: 'Product Updated',
         description: `${updatedProduct.name} has been updated successfully.`,
@@ -116,13 +142,37 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
             <Input id="price" type="number" value={formData.price} onChange={handleChange} className="col-span-3" required />
           </div>
           {productToEdit?.type === 'product' && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="quantity" className="text-right">
-                Quantity
-              </Label>
-              <Input id="quantity" type="number" value={formData.quantity} onChange={handleChange} className="col-span-3" required />
-            </div>
+            <>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="quantity" className="text-right">
+                  Stock Quantity
+                </Label>
+                <Input id="quantity" type="number" value={formData.quantity} onChange={handleChange} className="col-span-3" required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="minStockQuantity" className="text-right">
+                  Min Stock Level
+                </Label>
+                <Input id="minStockQuantity" type="number" value={formData.minStockQuantity} onChange={handleChange} className="col-span-3" required />
+              </div>
+            </>
           )}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="category" className="text-right">
+              Category
+            </Label>
+            <select
+              id="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="col-span-3 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            >
+              <option value="">Select a category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
           {/* Add Branch selection if needed for editing stock in a specific branch 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="branchId" className="text-right">

@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { QueryTypes, Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,9 +10,9 @@ const sequelize = new Sequelize(
   'Admin@123', // Using the same password as in config.js
   {
     host: 'localhost',
-    port: 8889, // Using the same port as in config.js
+    port: 8889, // Using port 8889 where the vyaparitrack database exists
     dialect: 'mysql',
-    logging: console.log, // Fixed deprecation warning
+    logging: false, // Disable logging for cleaner output
   }
 );
 

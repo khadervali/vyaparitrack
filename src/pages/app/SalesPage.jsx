@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const SalesPage = () => {
   const [activeTab, setActiveTab] = useState('orders');
+  const [recordsPerPage, setRecordsPerPage] = useState(5);
 
   return (
     <motion.div
@@ -27,7 +28,7 @@ const SalesPage = () => {
         <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="customers">Customers</TabsTrigger>
+          <TabsTrigger value="customers">Customer Orders</TabsTrigger>
         </TabsList>
         
         <TabsContent value="orders" className="space-y-4">
@@ -90,6 +91,20 @@ const SalesPage = () => {
                     ))}
                   </tbody>
                 </table>
+                <div className="flex justify-end items-center p-3 bg-black/5 dark:bg-white/5 border-t">
+                  <span className="mr-2 text-sm">Records per page:</span>
+                  <Select defaultValue="5">
+                    <SelectTrigger className="w-[70px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -110,12 +125,48 @@ const SalesPage = () => {
         
         <TabsContent value="customers" className="space-y-4">
           <Card className="card-glassmorphism">
-            <CardHeader>
-              <CardTitle>Customers</CardTitle>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle>Customer Orders</CardTitle>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Search customers..." 
+                    className="max-w-[200px]" 
+                  />
+                  <Select defaultValue="all">
+                    <SelectItem value="all">All Customers</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </Select>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] flex items-center justify-center">
-                <p className="text-muted-foreground">Customer management will be available soon</p>
+              <div className="border rounded-md overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-black/5 dark:bg-white/5">
+                    <tr>
+                      <th className="text-left p-3 text-sm font-medium">Customer</th>
+                      <th className="text-left p-3 text-sm font-medium">Last Order</th>
+                      <th className="text-left p-3 text-sm font-medium">Total Orders</th>
+                      <th className="text-left p-3 text-sm font-medium">Total Value</th>
+                      <th className="text-left p-3 text-sm font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <tr key={i} className="border-t">
+                        <td className="p-3 text-sm">Customer {i}</td>
+                        <td className="p-3 text-sm">2025-06-{10 + i}</td>
+                        <td className="p-3 text-sm">{i * 3 + 2}</td>
+                        <td className="p-3 text-sm">₹{i * 5000 + 2500}</td>
+                        <td className="p-3 text-sm">
+                          <Button variant="ghost" size="sm">View Orders</Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>

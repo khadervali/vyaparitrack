@@ -1,22 +1,20 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Package, 
   PlusCircle, 
-  Search, 
-  Filter, 
   FileSpreadsheet, 
   FileText as FileTextIcon,
   AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import StockAdjustmentModal from '@/components/StockAdjustmentModal';
 import AddProductModal from '@/components/AddProductModal';
 import EditProductModal from '@/components/EditProductModal';
 import InventoryTabs from './InventoryTabs';
+import DataTable from '@/components/ui/data-table';
 import api from '@/lib/api';
 
 const InventoryPage = () => {
@@ -29,24 +27,78 @@ const InventoryPage = () => {
     name: '',
     sku: '',
     category: '',
-    purchasePrice: '',
-    salePrice: '',
-    initialStock: '',
-    hsnSac: '',
-    taxRate: '',
+    price: '',
+    quantity: 0,
+    stockQuantity: 0,
+    minStockQuantity: 10,
+    type: 'product',
+    hsn_sac: '',
+    gst_rate: 18,
   });
   const [products, setProducts] = useState([]);
   const [isStockAdjustmentModalOpen, setIsStockAdjustmentModalOpen] = useState(false);
+  const [sortField, setSortField] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [visibleColumns, setVisibleColumns] = useState({
+    name: true,
+    sku: true,
+    category: true,
+    stock: true,
+    price: true,
+    actions: true
+  });
+  const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
   const { toast } = useToast();
   const isMounted = useRef(false);
   const apiCallInProgress = useRef(false);
 
   const handleExportExcel = () => {
-    alert("Export to Excel functionality (placeholder).");
+    // Create a CSV string from products data
+    const headers = ['Name', 'SKU', 'Category', 'Stock', 'Price'];
+    const csvContent = [
+      headers.join(','),
+      ...products.map(product => [
+        `"${product.name}"`,
+        `"${product.sku || 'N/A'}"`,
+        `"${product.category?.name || product.category || 'Uncategorized'}"`,
+        product.type === 'service' ? 'N/A' : (product.stockQuantity || product.quantity || 0),
+        product.price
+      ].join(','))
+    ].join('\n');
+    
+    // Create a blob and download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `inventory_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({ title: 'Success', description: 'Inventory exported to CSV successfully.' });
   };
 
   const handleExportPDF = () => {
-    alert("Export to PDF functionality (placeholder).");
+    toast({ title: 'Coming Soon', description: 'PDF export will be available in a future update.' });
+  };
+  
+  const handleSort = (field) => {
+    // If clicking the same field, toggle direction, otherwise set new field with asc direction
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+  
+  const toggleColumnVisibility = (column) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
   };
 
   // Memoize fetchProducts to prevent recreation on each render
@@ -58,11 +110,8 @@ const InventoryPage = () => {
     setLoading(true);
     
     try {
-      const queryParams = new URLSearchParams();
-      if (searchTerm) queryParams.append('searchTerm', searchTerm);
-      
       console.log('Fetching products...', new Date().toISOString());
-      const response = await api.get(`/products?${queryParams.toString()}`);
+      const response = await api.get('/products');
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -75,7 +124,25 @@ const InventoryPage = () => {
       setLoading(false);
       apiCallInProgress.current = false;
     }
-  }, [searchTerm, toast]);
+  }, [toast]);
+  
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+  
+  // Filter products based on search term
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm.trim()) return products;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return products.filter(product => 
+      product.name?.toLowerCase().includes(searchLower) || 
+      product.sku?.toLowerCase().includes(searchLower) ||
+      product.category?.name?.toLowerCase().includes(searchLower) ||
+      product.category?.toLowerCase().includes(searchLower)
+    );
+  }, [products, searchTerm]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,11 +162,13 @@ const InventoryPage = () => {
         name: '',
         sku: '',
         category: '',
-        purchasePrice: '',
-        salePrice: '',
-        initialStock: '',
-        hsnSac: '',
-        taxRate: '',
+        price: '',
+        quantity: 0,
+        stockQuantity: 0,
+        minStockQuantity: 10,
+        type: 'product',
+        hsn_sac: '',
+        gst_rate: 18,
       });
       fetchProducts();
     } catch (error) {
@@ -115,6 +184,20 @@ const InventoryPage = () => {
       fetchProducts();
     }
   }, [fetchProducts]);
+  
+  // Clear search when tab changes
+  useEffect(() => {
+    const handleTabChange = () => {
+      setSearchTerm('');
+    };
+    
+    // Add event listener for tab changes
+    document.addEventListener('tabChange', handleTabChange);
+    
+    return () => {
+      document.removeEventListener('tabChange', handleTabChange);
+    };
+  }, []);
 
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
@@ -137,12 +220,22 @@ const InventoryPage = () => {
   // Fetch inventory statistics
   const fetchInventoryStats = useCallback(() => {
     try {
-      // Use hardcoded stats for now
+      // Calculate actual stats from products data
+      const productItems = products.filter(p => p.type !== 'service');
+      const serviceItems = products.filter(p => p.type === 'service');
+      const lowStock = productItems.filter(p => 
+        p.stockQuantity > 0 && 
+        p.stockQuantity < (p.minStockQuantity || 10)
+      );
+      const outOfStock = productItems.filter(p => 
+        p.stockQuantity <= 0
+      );
+      
       setInventoryStats({
-        totalProducts: products.filter(p => p.type !== 'service').length || 0,
-        totalServices: products.filter(p => p.type === 'service').length || 0,
-        lowStockItems: 2,
-        outOfStockItems: 1
+        totalProducts: productItems.length || 0,
+        totalServices: serviceItems.length || 0,
+        lowStockItems: lowStock.length || 0,
+        outOfStockItems: outOfStock.length || 0
       });
     } catch (error) {
       console.error('Error calculating inventory stats:', error);
@@ -236,27 +329,70 @@ const InventoryPage = () => {
             
             {/* Products Tab Content - This will be shown/hidden by the InventoryTabs component */}
             <div id="products-content">
-              <div className="flex flex-col sm:flex-row gap-4 mb-4 mt-4">
-                <div className="relative flex-grow">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    placeholder="Search products or SKU..." 
-                    className="pl-10 bg-background/70 dark:bg-input focus-ring"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    className="focus-ring"
-                    onClick={() => toast({ 
-                      title: "Coming Soon", 
-                      description: "Filter functionality will be implemented soon." 
-                    })}
-                  >
-                    <Filter className="mr-2 h-4 w-4" /> Filters
-                  </Button>
+              <DataTable
+                data={products}
+                columns={[
+                  {
+                    key: 'name',
+                    header: 'Product Name',
+                    render: (row) => <span className="font-medium whitespace-nowrap">{row.name}</span>
+                  },
+                  {
+                    key: 'sku',
+                    header: 'SKU',
+                    render: (row) => row.sku || 'N/A'
+                  },
+                  {
+                    key: 'category',
+                    header: 'Category',
+                    render: (row) => row.type === 'service' ? (
+                      <span className="px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-500">Service</span>
+                    ) : (
+                      (row.category?.name || row.category || 'Uncategorized')
+                    )
+                  },
+                  {
+                    key: 'stockQuantity',
+                    header: 'Stock',
+                    className: 'text-right',
+                    render: (row) => row.type === 'service' ? 'N/A' : (
+                      <span className={`font-medium ${
+                        row.stockQuantity <= 0 ? 'text-red-500' : 
+                        row.stockQuantity < row.minStockQuantity ? 'text-yellow-500' : 'text-green-500'
+                      }`}>
+                        {row.stockQuantity || row.quantity || 0}
+                      </span>
+                    )
+                  },
+                  {
+                    key: 'price',
+                    header: 'Price',
+                    className: 'text-right',
+                    render: (row) => <span className="font-medium">{row.price}</span>
+                  },
+                  {
+                    key: 'actions',
+                    header: 'Actions',
+                    className: 'text-center',
+                    render: (row) => (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-primary hover:text-primary/80 focus-ring" 
+                        onClick={() => handleEditClick(row)}
+                      >
+                        Edit
+                      </Button>
+                    )
+                  }
+                ]}
+                searchable={true}
+                sortable={true}
+                pagination={true}
+                pageSize={10}
+                loading={loading}
+                emptyMessage="No products or services found. Add your first one!"
+                actions={
                   <Button 
                     variant="outline" 
                     onClick={handleExportExcel} 
@@ -264,62 +400,8 @@ const InventoryPage = () => {
                   >
                     <FileSpreadsheet className="mr-2 h-4 w-4" /> Export
                   </Button>
-                </div>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-foreground">
-                  <thead className="text-xs text-muted-foreground uppercase bg-accent/50 dark:bg-accent/20 backdrop-blur-sm">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 rounded-tl-md">Product Name</th>
-                      <th scope="col" className="px-6 py-3">SKU</th>
-                      <th scope="col" className="px-6 py-3">Category</th>
-                      <th scope="col" className="px-6 py-3 text-right">Stock</th>
-                      <th scope="col" className="px-6 py-3 text-right">Price</th>
-                      <th scope="col" className="px-6 py-3 text-center rounded-tr-md">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan="6" className="text-center py-8 text-muted-foreground">Loading products...</td>
-                      </tr>
-                    ) : products.length > 0 ? (
-                      products.map((product) => (
-                        <tr key={product.id} className="border-b dark:border-border/50 hover:bg-accent/30 dark:hover:bg-accent/10 transition-colors">
-                        <td className="px-6 py-4 font-medium whitespace-nowrap">{product.name}</td>
-                        <td className="px-6 py-4">{product.sku || 'N/A'}</td>
-                        <td className="px-6 py-4">
-                          {product.type === 'service' ? (
-                            <span className="px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-500">Service</span>
-                          ) : (
-                            product.category || 'Uncategorized'
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {product.type === 'service' ? 'N/A' : (
-                            <span className={`font-medium ${
-                              product.initialStock <= 0 ? 'text-red-500' : 
-                              product.initialStock < 10 ? 'text-yellow-500' : 'text-green-500'
-                            }`}>
-                              {product.initialStock}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right font-medium">{product.salePrice || product.purchasePrice}</td>
-                        <td className="px-6 py-4 text-center">
-                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 focus-ring" onClick={() => handleEditClick(product)}>Edit</Button>
-                        </td>
-                      </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="text-center py-8 text-muted-foreground">No products or services found. Add your first one!</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                }
+              />
             </div>
           </CardContent>
         </Card>

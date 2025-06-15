@@ -45,6 +45,7 @@ const StockAdjustmentModal = ({ isOpen, onClose, onStockAdjusted, products }) =>
       const response = await api.post('/inventory/adjust-stock', {
         productId: selectedProduct,
         quantity: parseInt(quantity),
+        stockQuantity: parseInt(quantity), // Add stockQuantity field
         adjustmentType
       });
       

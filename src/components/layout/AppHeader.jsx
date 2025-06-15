@@ -102,7 +102,7 @@ const AppHeader = ({
                 onClick={() => setIsProfileDropdownOpen(false)}
               >
                 <UserCircle className="h-4 w-4 mr-2" />
-                Profile Settings
+                My Profile
               </Link>
               <Link
                 to="/app/settings"

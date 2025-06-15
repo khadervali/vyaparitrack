@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import DataTable from '@/components/ui/data-table';
 import api from '@/lib/api';
 import StockAdjustmentModal from './StockAdjustmentModal';
 
@@ -23,7 +24,7 @@ const LowStockItems = ({ products, onStockAdjusted }) => {
 
       const filtered = products.filter(product => {
         if (product.type === 'service') return false;
-        const quantity = product.quantity || 0;
+        const quantity = product.stockQuantity || product.quantity || 0;
         const minQuantity = product.minStockQuantity || 5; // Default min stock is 5
         return quantity <= minQuantity;
       });
@@ -61,44 +62,56 @@ const LowStockItems = ({ products, onStockAdjusted }) => {
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-foreground">
-          <thead className="text-xs text-muted-foreground uppercase bg-accent/50 dark:bg-accent/20 backdrop-blur-sm">
-            <tr>
-              <th scope="col" className="px-6 py-3 rounded-tl-md">Product Name</th>
-              <th scope="col" className="px-6 py-3 text-right">Current Stock</th>
-              <th scope="col" className="px-6 py-3 text-right">Min Stock</th>
-              <th scope="col" className="px-6 py-3 text-center rounded-tr-md">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lowStockProducts.map((product) => (
-              <tr key={product.id} className="border-b dark:border-border/50 hover:bg-accent/30 dark:hover:bg-accent/10 transition-colors">
-                <td className="px-6 py-4 font-medium whitespace-nowrap">{product.name}</td>
-                <td className="px-6 py-4 text-right">
-                  <span className={`font-medium ${
-                    product.quantity <= 0 ? 'text-red-500' : 'text-yellow-500'
-                  }`}>
-                    {product.quantity}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">{product.minStockQuantity || 5}</td>
-                <td className="px-6 py-4 text-center">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-primary hover:text-primary/80 focus-ring"
-                    onClick={() => handleAdjustStock(product)}
-                  >
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                    Adjust Stock
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        data={lowStockProducts}
+        columns={[
+          {
+            key: 'name',
+            header: 'Product Name',
+            render: (row) => <span className="font-medium whitespace-nowrap">{row.name}</span>
+          },
+          {
+            key: 'stockQuantity',
+            header: 'Current Stock',
+            className: 'text-right',
+            render: (row) => (
+              <span className={`font-medium ${
+                (row.stockQuantity || row.quantity) <= 0 ? 'text-red-500' : 'text-yellow-500'
+              }`}>
+                {row.stockQuantity || row.quantity || 0}
+              </span>
+            )
+          },
+          {
+            key: 'minStockQuantity',
+            header: 'Min Stock',
+            className: 'text-right',
+            render: (row) => row.minStockQuantity || 5
+          },
+          {
+            key: 'actions',
+            header: 'Actions',
+            className: 'text-center',
+            render: (row) => (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-primary hover:text-primary/80 focus-ring"
+                onClick={() => handleAdjustStock(row)}
+              >
+                <ArrowUpDown className="mr-2 h-4 w-4" />
+                Adjust Stock
+              </Button>
+            )
+          }
+        ]}
+        searchable={true}
+        sortable={true}
+        pagination={true}
+        pageSize={10}
+        loading={loading}
+        emptyMessage="No low stock items found"
+      />
 
       <StockAdjustmentModal
         isOpen={isStockAdjustmentModalOpen}

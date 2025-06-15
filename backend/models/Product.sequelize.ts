@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
+import Category from './Category.sequelize';
 
 class Product extends Model {
   declare id: number;
@@ -11,6 +12,7 @@ class Product extends Model {
   declare stockQuantity: number;
   declare minStockQuantity: number;
   declare vendor_id: number;
+  declare category_id: number | null;
   declare createdAt: Date;
   declare updatedAt: Date;
 }
@@ -54,6 +56,16 @@ Product.init({
     allowNull: false,
     defaultValue: 10,
   },
+
+  category_id: {
+    type: DataTypes.INTEGER,
+    field: 'category_id', // Explicitly set the field name
+    allowNull: true,
+    references: {
+      model: 'categories',
+      key: 'id'
+    }
+  },
   vendor_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -78,6 +90,13 @@ Product.init({
   tableName: 'products',
   timestamps: true,
   underscored: false
+});
+
+// Define associations
+Product.belongsTo(Category, { 
+  foreignKey: 'category_id', 
+  as: 'category',
+  constraints: false // Disable foreign key constraints for testing
 });
 
 export default Product;
