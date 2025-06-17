@@ -1,140 +1,104 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Users, 
+import {
+  LayoutDashboard,
+  Package,
+  AlertTriangle,
+  ShoppingCart,
+  ShoppingBag,
+  BarChart3,
+  Users,
   Settings,
-  AlertCircle
+  User,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useVendor } from '@/context/VendorContext';
+import { motion } from 'framer-motion';
 
-const Sidebar = ({ isMobile, setIsMobileMenuOpen }) => {
-  const { currentVendor } = useVendor();
-  
-  const menuItems = [
-    {
-      title: 'Dashboard',
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      path: '/dashboard',
-    },
-    {
-      title: 'Inventory',
-      icon: <Package className="h-5 w-5" />,
-      path: '/inventory',
-    },
-    {
-      title: 'Low Stock',
-      icon: <AlertCircle className="h-5 w-5" />,
-      path: '/low-stock',
-      badge: 'New'
-    },
-    {
-      title: 'Sales',
-      icon: <ShoppingCart className="h-5 w-5" />,
-      path: '/sales',
-    },
-    {
-      title: 'Purchases',
-      icon: <Package className="h-5 w-5" />,
-      path: '/purchases',
-    },
-    {
-      title: 'Reports',
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      path: '/reports',
-    },
-    {
-      title: 'GST Tools',
-      icon: <Package className="h-5 w-5" />,
-      path: '/gst',
-    },
-    {
-      title: 'Customers',
-      icon: <Users className="h-5 w-5" />,
-      path: '/customers',
-    },
-    {
-      title: 'Settings',
-      icon: <Settings className="h-5 w-5" />,
-      path: '/settings',
-    },
+const Sidebar = () => {
+  const navigation = [
+    { name: 'Dashboard', href: '/app/dashboard', icon: LayoutDashboard },
+    { name: 'Inventory', href: '/app/inventory', icon: Package },
+    { name: 'Low Stock', href: '/app/low-stock', icon: AlertTriangle },
+    { name: 'Sales', href: '/app/sales', icon: ShoppingCart },
+    { name: 'Purchases', href: '/app/purchases', icon: ShoppingBag },
+    { name: 'Customers', href: '/app/customers', icon: Users },
+    { name: 'Reports', href: '/app/reports', icon: BarChart3 },
+    { name: 'GST Reports', href: '/app/gst', icon: BarChart3 },
   ];
 
-  const handleNavClick = () => {
-    if (isMobile) {
-      setIsMobileMenuOpen(false);
-    }
-  };
-
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-3 py-2">
-        <div className="mb-4 px-4 py-3.5">
-          <div className="text-lg font-semibold text-foreground">
-            VyapariTrack
-          </div>
-          {currentVendor && (
-            <div className="text-sm text-muted-foreground mt-1 truncate">
-              {currentVendor.name}
-            </div>
-          )}
-        </div>
-        <ScrollArea className="h-[calc(100vh-10rem)]">
-          <div className="space-y-1 px-1">
-            {menuItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={handleNavClick}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )
-                }
-              >
-                {item.icon}
-                <span>{item.title}</span>
-                {item.badge && (
-                  <span className="ml-auto bg-primary/20 text-primary text-xs px-1.5 py-0.5 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-              </NavLink>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
-      <div className="mt-auto p-4">
-        <Button variant="outline" className="w-full justify-start">
-          <span className="sr-only">Help</span>
-          <span className="flex items-center gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4"
+    <div className="flex h-full w-full md:w-64 flex-col border-r bg-background">
+      <div className="p-4 md:p-6">
+        <div className="flex items-center gap-2">
+          <motion.div
+            className="relative"
+            animate={{
+              rotate: [0, 5, -5, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <ShoppingBag className="h-8 w-8 text-primary" />
+            <motion.div
+              className="absolute -top-1 -right-1"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
             >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <path d="M12 17h.01" />
-            </svg>
-            Help & Support
+              <Sparkles className="h-4 w-4 text-yellow-400" />
+            </motion.div>
+          </motion.div>
+          <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            VyapariTrack
           </span>
-        </Button>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto py-2 md:py-4">
+        <nav className="grid gap-1 px-2">
+          {navigation.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.href}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )
+              }
+            >
+              <item.icon className="h-4 w-4" />
+              {item.name}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
+      <div className="p-4 border-t">
+        <NavLink
+          to="/app/profile"
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+              isActive
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )
+          }
+        >
+          <User className="h-4 w-4" />
+          Profile
+        </NavLink>
       </div>
     </div>
   );

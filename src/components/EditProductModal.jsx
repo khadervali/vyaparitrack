@@ -17,11 +17,11 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
     name: '',
     description: '',
     price: 0,
+    sku: '',
     category: '',
-    // Quantity and branchId are managed via Inventory,
-    // but we might need branchId for certain updates if the API requires it.
-    // quantity: '',
-    // branchId: '',
+    type: 'product',
+    stockQuantity: 0,
+    minStockQuantity: 10,
   });
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,23 +50,27 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
   };
 
   useEffect(() => {
-    if (productToEdit && isOpen) { // Only update when modal is open and productToEdit changes
+    if (productToEdit && isOpen) {
       setFormData({
         name: productToEdit.name || '',
         description: productToEdit.description || '',
         price: productToEdit.price || '',
+        sku: productToEdit.sku || '',
         quantity: productToEdit.stockQuantity || productToEdit.quantity || 0,
         minStockQuantity: productToEdit.minStockQuantity || 10,
         category: productToEdit.category?.name || productToEdit.category || '',
-        branchId: productToEdit.branchId || '', // Assuming branchId is part of product or inventory data
+        type: productToEdit.type || 'product',
       });
-    } else if (!isOpen) { // Reset form when modal closes
-       setFormData({
+    } else if (!isOpen) {
+      setFormData({
         name: '',
         description: '',
         price: 0,
-        // quantity: '',
-        // branchId: '',
+        sku: '',
+        category: '',
+        type: 'product',
+        stockQuantity: 0,
+        minStockQuantity: 10,
       });
     }
   }, [productToEdit, isOpen]);
@@ -81,7 +85,6 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
     setIsLoading(true);
 
     try {
-      // Construct the data to send based on item type
       // Find the selected category object
       const selectedCategory = categories.find(cat => cat.name === formData.category);
       
@@ -91,8 +94,11 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
         price: parseFloat(formData.price), // Ensure price is a number
         stockQuantity: parseInt(formData.quantity, 10),
         minStockQuantity: parseInt(formData.minStockQuantity || 10, 10),
-        category_id: selectedCategory ? selectedCategory.id : null
+        category_id: selectedCategory ? selectedCategory.id : null,
+        type: 'product'
       };
+      
+      console.log('Updating product with data:', dataToSend); // Debug log
       
       const response = await api.put(`/products/${productToEdit.id}`, dataToSend);
       
@@ -105,12 +111,12 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
       onProductUpdated(); // Refresh list
       onClose(); // Close modal
     } catch (error) {
+      console.error('Error updating product:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.response?.data?.message || 'Failed to update product',
         variant: 'destructive',
       });
-      console.error('Error updating product:', error); // Log the error for debugging
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +136,12 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
             <Input id="name" value={formData.name} onChange={handleChange} className="col-span-3" required />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="sku" className="text-right">
+              SKU
+            </Label>
+            <Input id="sku" value={formData.sku} onChange={handleChange} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="description" className="text-right">
               Description
             </Label>
@@ -141,7 +153,7 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
             </Label>
             <Input id="price" type="number" value={formData.price} onChange={handleChange} className="col-span-3" required />
           </div>
-          {productToEdit?.type === 'product' && (
+          {formData.type === 'product' && (
             <>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="quantity" className="text-right">
@@ -173,14 +185,6 @@ const EditProductModal = ({ isOpen, onClose, productToEdit, onProductUpdated }) 
               ))}
             </select>
           </div>
-          {/* Add Branch selection if needed for editing stock in a specific branch 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="branchId" className="text-right">
-              Branch
-            </Label>
-            <Input id="branchId" value={formData.branchId} onChange={handleChange} className="col-span-3" required />
-          </div>
-          */}
           <DialogFooter>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Updating...' : 'Save Changes'}

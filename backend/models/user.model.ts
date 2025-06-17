@@ -15,6 +15,21 @@ export interface UserAttributes {
   created_at?: Date;
   updated_at?: Date;
   Role?: Role; // Add optional Role property
+  // New fields for profile and settings
+  phone?: string;
+  company?: string;
+  gstin?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  avatar?: string;
+  timezone?: string;
+  date_format?: string;
+  currency?: string;
+  language?: string;
+  email_notifications?: boolean;
+  whatsapp_notifications?: boolean;
 }
 
 // Define the model
@@ -30,6 +45,21 @@ class User extends Model<UserAttributes> implements UserAttributes {
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
   public Role?: Role;
+  // New fields for profile and settings
+  public phone?: string;
+  public company?: string;
+  public gstin?: string;
+  public address?: string;
+  public city?: string;
+  public state?: string;
+  public pincode?: string;
+  public avatar?: string;
+  public timezone?: string;
+  public date_format?: string;
+  public currency?: string;
+  public language?: string;
+  public email_notifications?: boolean;
+  public whatsapp_notifications?: boolean;
 }
 
 User.init(
@@ -72,6 +102,68 @@ User.init(
     role_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    company: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    gstin: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    state: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    pincode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    avatar: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    timezone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'Asia/Kolkata',
+    },
+    date_format: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'DD-MM-YYYY',
+    },
+    currency: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'INR',
+    },
+    language: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'en',
+    },
+    email_notifications: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
+    whatsapp_notifications: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
     },
     // vendor_id removed - now using UserVendor junction table for many-to-many relationship
   },

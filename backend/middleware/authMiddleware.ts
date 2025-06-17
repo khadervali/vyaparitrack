@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-// Extend Express Request type to include user
+// Extend Express Request type to include user and file
 export interface CustomRequest extends Request {
   user?: {
     id: string;
     role: string;
     vendor_id?: string;
   };
+  file?: Express.Multer.File;
 }
 
 // Protect routes - verify token

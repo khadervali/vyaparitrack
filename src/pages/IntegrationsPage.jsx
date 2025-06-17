@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link2, Zap, Settings } from 'lucide-react';
 
-const IntegrationsPage = () => {
+const IntegrationsPage1 = () => {
   const comingSoonIntegrations = [
     { name: "Tally", description: "Sync your accounting data seamlessly.", icon: <img  alt="Tally ERP 9 Logo" class="w-10 h-10" src="https://images.unsplash.com/photo-1553811527-003e18e83192" /> },
     { name: "Shopify", description: "Connect your e-commerce store for automated inventory updates.", icon: <img  alt="Shopify Logo" class="w-10 h-10" src="https://images.unsplash.com/photo-1657097097106-be38cad7b3e0" /> },
@@ -96,4 +96,4 @@ const IntegrationsPage = () => {
   );
 };
 
-export default IntegrationsPage;
+export default IntegrationsPage1;

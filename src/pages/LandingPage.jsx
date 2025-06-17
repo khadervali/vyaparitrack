@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, BarChart3, Users, ShieldCheck, Zap, IndianRupee } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PublicHeader from '@/components/layout/PublicHeader';
 
 const FeatureCard = ({ icon, title, description, delay }) => (
   <motion.div
@@ -62,37 +63,54 @@ const LandingPage = () => {
 
   return (
     <div className="overflow-x-hidden">
+      <PublicHeader />
       {/* Hero Section */}
-      <section className="relative py-24 md:py-40 min-h-[85vh] flex items-center justify-center text-center px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-blue-600/70 to-sky-500/70 dark:from-primary/60 dark:via-blue-700/60 dark:to-sky-600/60 opacity-80 dark:opacity-70"></div>
-        <div className="absolute inset-0 pattern-dots opacity-10 dark:opacity-5"></div>
-        
-        <motion.div
-          className="relative z-10 max-w-4xl mx-auto"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-8">
-            <span className="block text-white leading-tight">The Future of Inventory Management is Here.</span>
-            <span className="block text-yellow-300 dark:text-yellow-400 mt-3">Welcome to VyapariTrack.</span>
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90 dark:text-white/80 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Empower your business with a cutting-edge SaaS multi-vendor inventory system. Track, manage, and grow with GST-compliant billing, white-labeling, and robust analytics.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button size="lg" className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-primary-foreground font-semibold shadow-xl px-8 py-3 text-lg" asChild>
-                <Link to="/signup">Get Started For Free</Link>
-              </Button>
+      <section className="relative pt-32 pb-24 md:pt-40 md:pb-40 min-h-[85vh] flex items-center justify-center text-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Video Background */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover z-0 filter blur-md"
+          src="/assets/inventory-bg.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+        {/* Overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-blue-600/70 to-sky-500/70 dark:from-primary/60 dark:via-blue-700/60 dark:to-sky-600/60 opacity-80 dark:opacity-70 z-10"></div>
+        {/* Content */}
+        <div className="container mx-auto relative z-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left side - Text content */}
+            <motion.div
+              className="text-left"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-8">
+                <span className="block text-white leading-tight">The Future of Inventory Management is Here.</span>
+                <span className="block text-yellow-300 dark:text-yellow-400 mt-3">Welcome to VyapariTrack.</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-white/90 dark:text-white/80 mb-12 max-w-2xl leading-relaxed">
+                Empower your business with a cutting-edge SaaS multi-vendor inventory system. Track, manage, and grow with GST-compliant billing, white-labeling, and robust analytics.
+              </p>
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button size="lg" className="w-full sm:w-auto bg-yellow-400 hover:bg-yellow-500 text-primary-foreground font-semibold shadow-xl px-8 py-3 text-lg" asChild>
+                    <Link to="/signup">Get Started For Free</Link>
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto text-white border-white/80 hover:bg-white/10 hover:text-white px-8 py-3 text-lg" asChild>
+                    <Link to="/features">Learn More</Link>
+                  </Button>
+                </motion.div>
+              </div>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto text-white border-white/80 hover:bg-white/10 hover:text-white px-8 py-3 text-lg" asChild>
-                 <Link to="/features">Learn More</Link>
-              </Button>
-            </motion.div>
+            {/* Right side - Empty for now, or you can add floating elements if needed */}
+            <div className="hidden lg:block"></div>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Features Section */}

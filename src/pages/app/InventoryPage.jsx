@@ -343,12 +343,25 @@ const InventoryPage = () => {
                     render: (row) => row.sku || 'N/A'
                   },
                   {
+                    key: 'type',
+                    header: 'Type',
+                    render: (row) => (
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        row.type === 'service' 
+                          ? 'bg-blue-500/20 text-blue-500' 
+                          : 'bg-green-500/20 text-green-500'
+                      }`}>
+                        {row.type === 'service' ? 'Service' : 'Product'}
+                      </span>
+                    )
+                  },
+                  {
                     key: 'category',
                     header: 'Category',
-                    render: (row) => row.type === 'service' ? (
-                      <span className="px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-500">Service</span>
-                    ) : (
-                      (row.category?.name || row.category || 'Uncategorized')
+                    render: (row) => (
+                      <span className="px-2 py-1 rounded-full text-xs bg-purple-500/20 text-purple-500">
+                        {row.category?.name || 'Uncategorized'}
+                      </span>
                     )
                   },
                   {
@@ -368,7 +381,7 @@ const InventoryPage = () => {
                     key: 'price',
                     header: 'Price',
                     className: 'text-right',
-                    render: (row) => <span className="font-medium">{row.price}</span>
+                    render: (row) => <span className="font-medium">₹{row.price}</span>
                   },
                   {
                     key: 'actions',
